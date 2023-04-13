@@ -5,9 +5,15 @@ from models.model import Model
 from args import parse_arguments
 from dataloader.dataloader import Dataloader
 
+from pytorch_lightning.loggers import WandbLogger
+
 
 if __name__ == '__main__':
     args = parse_arguments()
+    wandb_logger = WandbLogger(name=f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}', project='jihwan_test')
+    
+    # 설정된 args를 실험의 hyperarams에 저장합니다.
+    wandb_logger.log_hyperparams(args)
 
     # dataloader와 model을 정의합니다.
     dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, 
@@ -20,7 +26,8 @@ if __name__ == '__main__':
     trainer = pl.Trainer(accelerator=accelerator, 
                          devices=1, 
                          max_epochs=args.max_epoch, 
-                         log_every_n_steps=1)
+                         log_every_n_steps=1,
+                         logger=wandb_logger)
 
     # Train part
     trainer.fit(model=model, datamodule=dataloader)
