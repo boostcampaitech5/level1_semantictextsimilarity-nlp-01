@@ -12,7 +12,7 @@ def parse_arguments():
     parser.add_argument('--learning_rate', default=1e-5, type=float)
     parser.add_argument('--train_path', default='./data/train.csv')
     parser.add_argument('--dev_path', default='./data/dev.csv')
-    parser.add_argument('--test_path', default='./data/test.csv')
+    parser.add_argument('--test_path', default='./data/dev.csv')
     parser.add_argument('--predict_path', default='./data/test.csv')
     parser.add_argument('--saved_model_path', default='./saved/models/model.pt')
     args = parser.parse_args()
