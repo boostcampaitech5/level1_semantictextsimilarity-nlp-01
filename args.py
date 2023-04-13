@@ -15,5 +15,5 @@ def parse_arguments():
     parser.add_argument('--test_path', default='./data/test.csv')
     parser.add_argument('--predict_path', default='./data/test.csv')
     parser.add_argument('--saved_model_path', default='./saved/models/model.pt')
-    args = parser.parse_args()
+    args = parser.parse_args(args = [])
     return args
