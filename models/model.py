@@ -20,6 +20,9 @@ class Model(pl.LightningModule):
         # Loss 계산을 위해 사용될 L1Loss를 호출합니다.
         self.loss_func = torch.nn.L1Loss()
 
+        # val logit 값 출력 
+        self.validation_predictions = []
+
     def forward(self, x):
         x = self.plm(x)['logits']
         return x
