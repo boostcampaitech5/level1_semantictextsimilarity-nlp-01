@@ -1,3 +1,4 @@
+# dataloader.py
 import pandas as pd
 
 import torch
@@ -7,18 +8,16 @@ from transformers import AutoTokenizer
 from .dataset import *
 from tqdm.auto import tqdm
 
+# huggingface datasets
+from datasets import load_dataset
+
 class Dataloader(pl.LightningDataModule):
-    def __init__(self, model_name, batch_size, shuffle, 
-                 train_path, dev_path, test_path, predict_path):
+    def __init__(self, model_name, batch_size, shuffle, dataset_commit_hash):
         super().__init__()
         self.model_name = model_name
         self.batch_size = batch_size
         self.shuffle = shuffle
-
-        self.train_path = train_path
-        self.dev_path = dev_path
-        self.test_path = test_path
-        self.predict_path = predict_path
+        self.dataset_commit_hash = dataset_commit_hash
 
         self.train_dataset = None
         self.val_dataset = None
@@ -58,9 +57,20 @@ class Dataloader(pl.LightningDataModule):
 
     def setup(self, stage='fit'):
         if stage == 'fit':
-            # 학습 데이터와 검증 데이터셋을 호출합니다
-            train_data = pd.read_csv(self.train_path)
-            val_data = pd.read_csv(self.dev_path)
+            # 데이터셋 로드
+            # revision: tag name, or branch name, or commit hash
+            train = load_dataset("Salmons/STS_Competition", 
+                                split='train', 
+                                column_names=['id', 'source', 'sentence_1', 'sentence_2', 'label', 'binary-label'], 
+                                revision=self.dataset_commit_hash)
+            valid = load_dataset("Salmons/STS_Competition", 
+                                split='validation', 
+                                column_names=['id', 'source', 'sentence_1', 'sentence_2', 'label', 'binary-label'], 
+                                revision=self.dataset_commit_hash)
+
+            # pandas 형식으로 변환
+            train_data = train.to_pandas().iloc[1:].reset_index(drop=True).astype({'label':'float', 'binary-label':'float'})
+            val_data = valid.to_pandas().iloc[1:].reset_index(drop=True).astype({'label':'float', 'binary-label':'float'})
 
             # 학습데이터 준비
             train_inputs, train_targets = self.preprocessing(train_data)
@@ -68,18 +78,27 @@ class Dataloader(pl.LightningDataModule):
             # 검증데이터 준비
             val_inputs, val_targets = self.preprocessing(val_data)
 
-            # train 데이터만 shuffle을 적용해줍니다.
-            # 필요하다면 val, test 데이터에도 shuffle을 적용할 수 있습니다.
+            # train 데이터만 shuffle을 적용해줍니다, 필요하다면 val, test 데이터에도 shuffle을 적용할 수 있습니다
             self.train_dataset = Dataset(train_inputs, train_targets)
             self.val_dataset = Dataset(val_inputs, val_targets)
+        
         else:
-            # 평가데이터 준비
-            test_data = pd.read_csv(self.test_path)
-            test_inputs, test_targets = self.preprocessing(test_data)
-            self.test_dataset = Dataset(test_inputs, test_targets)
+            test = load_dataset("Salmons/STS_Competition", 
+                                split='validation', 
+                                column_names=['id', 'source', 'sentence_1', 'sentence_2', 'label', 'binary-label'], 
+                                revision=self.dataset_commit_hash)
+            predict = load_dataset("Salmons/STS_Competition", 
+                                split='test', 
+                                column_names=['id', 'source', 'sentence_1', 'sentence_2', 'label', 'binary-label'], 
+                                revision=self.dataset_commit_hash)
 
-            predict_data = pd.read_csv(self.predict_path)
+            test_data = test.to_pandas().iloc[1:].reset_index(drop=True).astype({'label':'float', 'binary-label':'float'})
+            predict_data = predict.to_pandas().iloc[1:].reset_index(drop=True)[['id', 'source', 'sentence_1', 'sentence_2']]
+
+            test_inputs, test_targets = self.preprocessing(test_data)
             predict_inputs, predict_targets = self.preprocessing(predict_data)
+
+            self.test_dataset = Dataset(test_inputs, test_targets)            
             self.predict_dataset = Dataset(predict_inputs, [])
 
     def train_dataloader(self):
@@ -98,4 +117,3 @@ class Dataloader(pl.LightningDataModule):
     def predict_dataloader(self):
         return torch.utils.data.DataLoader(self.predict_dataset, 
                                            batch_size=self.batch_size)
-

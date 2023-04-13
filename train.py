@@ -16,9 +16,7 @@ if __name__ == '__main__':
     wandb_logger.log_hyperparams(args)
 
     # dataloader와 model을 정의합니다.
-    dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, 
-                            args.train_path, args.dev_path, args.test_path, 
-                            args.predict_path)
+    dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.dataset_commit_hash)
     model = Model(args.model_name, args.learning_rate)
 
     # gpu가 없으면 'gpus=0'을, gpu가 여러개면 'gpus=4'처럼 사용하실 gpu의 개수를 입력해주세요
