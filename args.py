@@ -15,5 +15,6 @@ def parse_arguments():
     parser.add_argument('--test_path', default='./data/dev.csv')
     parser.add_argument('--predict_path', default='./data/test.csv')
     parser.add_argument('--saved_model_path', default='./saved/models/model.pt')
+    parser.add_argument('--accelerator', default='gpu')
     args = parser.parse_args()
     return args
