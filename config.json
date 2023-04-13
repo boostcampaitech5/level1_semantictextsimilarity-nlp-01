@@ -1,6 +1,6 @@
 {
     "model_name" : "klue/roberta-small",
-    "batch_size" : 16,
+    "batch_size" : 32,
     "max_epoch" : 1,
     "shuffle" : true,
     "learning_rate" : 1e-5,
