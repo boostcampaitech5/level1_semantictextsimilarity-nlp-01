@@ -8,3 +8,4 @@ saved/
 lightning_logs/
 jihwan_test/
 wandb/
+config.json
