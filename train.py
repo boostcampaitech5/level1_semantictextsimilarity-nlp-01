@@ -10,7 +10,7 @@ from pytorch_lightning.loggers import WandbLogger
 
 if __name__ == '__main__':
     args = parse_arguments()
-    wandb_logger = WandbLogger(name=f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}', project='jihwan_test')
+    wandb_logger = WandbLogger(name=f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}', project=args.project_name)
     
     # 설정된 args를 실험의 hyperarams에 저장합니다.
     wandb_logger.log_hyperparams(args)
