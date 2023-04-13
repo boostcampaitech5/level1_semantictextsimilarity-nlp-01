@@ -3,8 +3,8 @@ __pycache__
 .DS_Store
 .ipynb_checkpoints
 
-data
-saved
+data/
+saved/
 lightning_logs/
 jihwan_test/
 wandb/
