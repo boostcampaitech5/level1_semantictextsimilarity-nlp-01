@@ -5,4 +5,6 @@ __pycache__
 
 data
 saved
-lightning_logs
+lightning_logs/
+jihwan_test/
+wandb/
