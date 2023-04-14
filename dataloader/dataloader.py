@@ -95,6 +95,8 @@ class Dataloader(pl.LightningDataModule):
                                 revision=self.dataset_commit_hash)
 
             test_data = test.to_pandas().iloc[1:].reset_index(drop=True).astype({'label':'float', 'binary-label':'float'})
+            
+            # val_dataset으로 predict 해서 결과물 보려고 구분하는 지점
             if self.use_val_for_predict:
                 predict_data = test_data.copy()
             else:
