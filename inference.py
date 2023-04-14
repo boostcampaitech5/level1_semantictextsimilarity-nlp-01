@@ -11,9 +11,7 @@ if __name__ == '__main__':
     args = parse_arguments()
 
     # dataloader와 model을 정의합니다.
-    dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, 
-                            args.train_path, args.dev_path, args.test_path, 
-                            args.predict_path)
+    dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.dataset_commit_hash)
     model = torch.load(args.saved_model_path)
 
     # gpu가 없으면 'gpus=0'을,
