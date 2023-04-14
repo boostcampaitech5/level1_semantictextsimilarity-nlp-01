@@ -4,6 +4,9 @@ import pytorch_lightning as pl
 from torchmetrics.functional import pearson_corrcoef
 from transformers import AutoModelForSequenceClassification
 
+import wandb
+from wandb import AlertLevel
+
 class Model(pl.LightningModule):
     def __init__(self, model_name, lr):
         super().__init__()
@@ -42,7 +45,14 @@ class Model(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x, y = batch
         logits = self(x)
-        self.log("test_pearson", pearson_corrcoef(logits.squeeze(), y.squeeze()))
+        pearson = pearson_corrcoef(logits.squeeze(), y.squeeze())
+        self.log("test_pearson", pearson)
+
+        wandb.alert(
+		    title="test_step",
+		    level=AlertLevel.INFO,
+		    text=f'test_pearson : {pearson}'
+		)
 
     def predict_step(self, batch, batch_idx):
         x = batch
