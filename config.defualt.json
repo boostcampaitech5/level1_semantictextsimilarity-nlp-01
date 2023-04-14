@@ -4,5 +4,7 @@
     "max_epoch" : 1,
     "shuffle" : true,
     "learning_rate" : 1e-5,
-    "saved_model_path" : "./saved/models/model.pt"
+    "saved_model_path" : "./saved/models/model.pt",
+    "project_name" : "project_name",
+    "dataset_commit_hash" : "dataset_commit_hash"
 }
