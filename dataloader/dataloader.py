@@ -12,7 +12,7 @@ from tqdm.auto import tqdm
 from datasets import load_dataset
 
 class Dataloader(pl.LightningDataModule):
-    def __init__(self, model_name, batch_size, shuffle, dataset_commit_hash):
+    def __init__(self, model_name, batch_size, shuffle, dataset_commit_hash, use_val_for_predict = False):
         super().__init__()
         self.model_name = model_name
         self.batch_size = batch_size
@@ -29,6 +29,8 @@ class Dataloader(pl.LightningDataModule):
         self.target_columns = ['label']
         self.delete_columns = ['id']
         self.text_columns = ['sentence_1', 'sentence_2']
+
+        self.use_val_for_predict = use_val_for_predict
 
     def tokenizing(self, dataframe):
         data = []
@@ -93,12 +95,15 @@ class Dataloader(pl.LightningDataModule):
                                 revision=self.dataset_commit_hash)
 
             test_data = test.to_pandas().iloc[1:].reset_index(drop=True).astype({'label':'float', 'binary-label':'float'})
-            predict_data = predict.to_pandas().iloc[1:].reset_index(drop=True)[['id', 'source', 'sentence_1', 'sentence_2']]
+            if self.use_val_for_predict:
+                predict_data = test_data.copy()
+            else:
+                predict_data = predict.to_pandas().iloc[1:].reset_index(drop=True)[['id', 'source', 'sentence_1', 'sentence_2']]
 
             test_inputs, test_targets = self.preprocessing(test_data)
             predict_inputs, predict_targets = self.preprocessing(predict_data)
 
-            self.test_dataset = Dataset(test_inputs, test_targets)            
+            self.test_dataset = Dataset(test_inputs, test_targets)
             self.predict_dataset = Dataset(predict_inputs, [])
 
     def train_dataloader(self):

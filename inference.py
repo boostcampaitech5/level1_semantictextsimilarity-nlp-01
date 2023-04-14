@@ -12,6 +12,7 @@ if __name__ == '__main__':
 
     # dataloader와 model을 정의합니다.
     dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.dataset_commit_hash)
+    val_dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.dataset_commit_hash, use_val_for_predict=True)
     model = torch.load(args.saved_model_path)
 
     # gpu가 없으면 'gpus=0'을,
@@ -33,3 +34,12 @@ if __name__ == '__main__':
     output = pd.read_csv('./data/sample_submission.csv')
     output['target'] = predictions
     output.to_csv('./data/output.csv', index=False)
+
+
+    # valid dataset 예측값을 확인하여 사후 분석 수행을 위한 dev_output.csv 뽑아내기 
+    val_predict = trainer.predict(model=model, datamodule=val_dataloader)
+    val_predict = list(round(float(i), 1) for i in torch.cat(val_predict))
+
+    dev_output = pd.read_csv('./data/dev.csv')
+    dev_output['preds'] = val_predict
+    dev_output.to_csv('./dev_output.csv', index=False)
