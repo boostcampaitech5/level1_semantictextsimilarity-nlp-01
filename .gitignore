@@ -13,3 +13,4 @@ jihwan_test/
 wandb/
 config.json
 dev_output.csv
+EDA.ipynb
