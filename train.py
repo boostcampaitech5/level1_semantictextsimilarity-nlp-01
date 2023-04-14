@@ -17,7 +17,7 @@ if __name__ == '__main__':
     run_name = f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}'
 
     wandb.init(entity=args.entity, # config.default.json에 default값 'salmons'로 지정되어 있음
-               project='test',
+               project=args.project_name,
                name=run_name
               )
 
