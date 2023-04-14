@@ -1,11 +1,10 @@
 import torch
 import pytorch_lightning as pl
-
 from torchmetrics.functional import pearson_corrcoef
 from transformers import AutoModelForSequenceClassification
-
 import wandb
 from wandb import AlertLevel
+pl.seed_everything(420)
 
 class Model(pl.LightningModule):
     def __init__(self, model_name, lr):
@@ -64,4 +63,5 @@ class Model(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
-        return optimizer
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=50, T_mult=2, eta_min=0)
+        return [optimizer], [scheduler]

@@ -1,11 +1,9 @@
 import pandas as pd
-
 import torch
 import pytorch_lightning as pl
-
 from args import parse_arguments
 from dataloader.dataloader import Dataloader
-
+pl.seed_everything(420)
 
 if __name__ == '__main__':
     args = parse_arguments()

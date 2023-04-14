@@ -1,15 +1,12 @@
 # dataloader.py
 import pandas as pd
-
 import torch
 import pytorch_lightning as pl
 from transformers import AutoTokenizer
-
 from .dataset import *
 from tqdm.auto import tqdm
-
-# huggingface datasets
 from datasets import load_dataset
+pl.seed_everything(420)
 
 class Dataloader(pl.LightningDataModule):
     def __init__(self, model_name, batch_size, shuffle, dataset_commit_hash, use_val_for_predict = False):

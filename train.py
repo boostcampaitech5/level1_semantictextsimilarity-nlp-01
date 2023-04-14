@@ -1,14 +1,13 @@
 import torch
 import pandas as pd
 import pytorch_lightning as pl
-
 from models.model import Model
 from args import parse_arguments
 from dataloader.dataloader import Dataloader
-
 import wandb
 from pytorch_lightning.loggers import WandbLogger
 from wandb import AlertLevel # logging level 지정시 사용
+pl.seed_everything(420)
 
 if __name__ == '__main__':
     args = parse_arguments()
