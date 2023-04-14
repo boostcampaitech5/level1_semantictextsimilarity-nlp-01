@@ -5,6 +5,6 @@
     "shuffle" : true,
     "learning_rate" : 1e-5,
     "saved_model_path" : "./saved/models/model.pt",
-    "project_name" : "jihwan_test",
-    "dataset_commit_hash" : "03e01eae5e5596e23afdf86ff3006e170881ca60"
+    "project_name" : "project_name",
+    "dataset_commit_hash" : "dataset_commit_hash"
 }
