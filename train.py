@@ -37,7 +37,8 @@ if __name__ == '__main__':
                          devices=1, 
                          max_epochs=args.max_epoch, 
                          log_every_n_steps=1,
-                         logger=wandb_logger)
+                         logger=wandb_logger,
+                         precision=16)
 
     # slack에 실험 시작 메시지를 보냅니다.
     wandb.alert(
