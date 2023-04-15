@@ -7,5 +7,22 @@
     "saved_model_path" : "./saved/models/model.pt",
     "project_name" : "test",
     "entity" : "salmons",
-    "dataset_commit_hash" : "03e01eae5e5596e23afdf86ff3006e170881ca60"
+    "dataset_commit_hash" : "03e01eae5e5596e23afdf86ff3006e170881ca60",
+    "sweep_config" : {
+        "method" : "bayes",
+        "metric" : {
+            "name": "val_pearson",
+            "goal": "maximize"
+        },
+        "parameters" : {
+            "lr" : {
+                "distribution" : "uniform",
+                "min" : 1e-6,
+                "max" : 1e-4
+            },
+            "epochs" : {
+                "values" : [5,6,7,8,9,10]
+            }
+        }
+    }
 }
