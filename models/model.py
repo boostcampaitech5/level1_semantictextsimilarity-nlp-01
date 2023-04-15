@@ -64,4 +64,14 @@ class Model(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=50, T_mult=2, eta_min=0)
-        return [optimizer], [scheduler]
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "interval": "step"  # 스텝별로 스케줄러를 업데이트하도록 설정
+            }
+        }
+    def on_train_epoch_start(self):
+        # 에폭 시작 시 학습률을 로깅합니다.
+        lr = self.trainer.optimizers[0].param_groups[0]["lr"]
+        self.log("lr", lr)
