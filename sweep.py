@@ -43,5 +43,5 @@ if __name__ == '__main__':
     wandb.agent(
         sweep_id=sweep_id,
         function=sweep_train,
-        count=5
+        count=args.sweep_count
     )
