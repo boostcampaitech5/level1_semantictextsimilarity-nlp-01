@@ -40,4 +40,4 @@ if __name__ == '__main__':
 
     dev_output = pd.read_csv('./data/dev.csv')
     dev_output['preds'] = val_predict
-    dev_output.to_csv('./dev_output.csv', index=False)
+    dev_output.to_csv('./dev_output.csv', index=False, encoding='cp949')
