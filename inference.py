@@ -22,6 +22,9 @@ if __name__ == '__main__':
                          log_every_n_steps=1)
 
     # Inference part
+    run_name = f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}'
+    run_name = args.model_name.replace('/', '_')
+
     # 저장된 모델로 예측을 진행합니다.
     predictions = trainer.predict(model=model, datamodule=dataloader)
 
@@ -29,10 +32,10 @@ if __name__ == '__main__':
     predictions = list(round(float(i), 1) for i in torch.cat(predictions))
     predictions = [min(5, max(0, x)) for x in predictions] # 5.1과 같은 값들을 5로, 0보다 작은 값들은 0으로 바꿔준다. 
 
-    # output 형식을 불러와서 예측된 결과로 바꿔주고, output.csv로 출력합니다.s
+    # output 형식을 불러와서 예측된 결과로 바꿔주고, output.csv로 출력합니다.
     output = pd.read_csv('./data/sample_submission.csv')
     output['target'] = predictions
-    output.to_csv('./data/output.csv', index=False)
+    output.to_csv(f'./outputs/output_{run_name}.csv', index=False)
 
     # valid dataset 예측값을 확인하여 사후 분석 수행을 위한 dev_output.csv 뽑아내기 
     val_predict = trainer.predict(model=model, datamodule=val_dataloader)
@@ -41,4 +44,4 @@ if __name__ == '__main__':
     dev_output = pd.read_csv('./data/dev.csv')
     dev_output['preds'] = val_predict
     dev_output['diff'] = dev_output['label'] - dev_output['preds']
-    dev_output.to_csv('./dev_output.csv', index=False, encoding='cp949')
+    dev_output.to_csv(f'./outputs/dev_output_{run_name}.csv', index=False, encoding='cp949')
