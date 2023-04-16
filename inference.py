@@ -27,12 +27,12 @@ if __name__ == '__main__':
 
     # 예측된 결과를 형식에 맞게 반올림하여 준비합니다.
     predictions = list(round(float(i), 1) for i in torch.cat(predictions))
+    predictions = [min(5, max(0, x)) for x in predictions] # 5.1과 같은 값들을 5로, 0보다 작은 값들은 0으로 바꿔준다. 
 
-    # output 형식을 불러와서 예측된 결과로 바꿔주고, output.csv로 출력합니다.
+    # output 형식을 불러와서 예측된 결과로 바꿔주고, output.csv로 출력합니다.s
     output = pd.read_csv('./data/sample_submission.csv')
     output['target'] = predictions
     output.to_csv('./data/output.csv', index=False)
-
 
     # valid dataset 예측값을 확인하여 사후 분석 수행을 위한 dev_output.csv 뽑아내기 
     val_predict = trainer.predict(model=model, datamodule=val_dataloader)
