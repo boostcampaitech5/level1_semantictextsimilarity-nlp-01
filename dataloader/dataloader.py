@@ -1,5 +1,6 @@
 # dataloader.py
 import pandas as pd
+import re
 import torch
 import pytorch_lightning as pl
 from transformers import AutoTokenizer
@@ -28,6 +29,27 @@ class Dataloader(pl.LightningDataModule):
         self.text_columns = ['sentence_1', 'sentence_2']
 
         self.use_val_for_predict = use_val_for_predict
+    
+    def preprocess_text(self, text):
+        """
+        특수문자 일부(. ? ! , ; : ^)만 남기고 제거, 반복글자 줄이기, 한글과 숫자만 남기기 
+        Args: 
+            text(str) : 전처리 할 텍스트 
+        Returns:
+            text(str) : 전처리 끝난 텍스트 
+        """
+        # <>사이의 이모티콘 제거 
+        text = re.sub('<.*?>', '', text)
+        # 한글, 숫자, 특수문자 . ? ! , ; : ^만 남기기
+        text = re.sub(r'[^ㄱ-ㅎㅏ-ㅣ가-힣0-9\s.,?!:;^]', '', text)
+        # 특수문자 중복제거 
+        text = re.sub(r'([.?!,:]){2,}', r'\1', text)
+        # 양 공백 제거 
+        text = text.strip()
+        # 반복되는 글자를 2개로 줄여준다. 
+        text = re.sub(r"(.)\1+", r"\1\1", text)
+
+        return text
 
     def tokenizing(self, dataframe):
         data = []
@@ -42,7 +64,10 @@ class Dataloader(pl.LightningDataModule):
         return data
 
     def preprocessing(self, data):
-        # 안쓰는 컬럼을 삭제합니다.
+        # 기본 텍스트 전처리
+        data[self.text_columns] = data[self.text_columns].apply(lambda x: x.apply(self.preprocess_text))
+
+        # 안쓰는 컬럼을 삭제합니다.s
         data = data.drop(columns=self.delete_columns)
 
         # 타겟 데이터가 없으면 빈 배열을 리턴합니다.
