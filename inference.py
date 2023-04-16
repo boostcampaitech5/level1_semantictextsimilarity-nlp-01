@@ -22,8 +22,7 @@ if __name__ == '__main__':
                          log_every_n_steps=1)
 
     # Inference part
-    run_name = f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}'
-    run_name = args.model_name.replace('/', '_')
+    run_name = f'snunlp_{args.batch_size}_{args.max_epoch}_{args.learning_rate}'
 
     # 저장된 모델로 예측을 진행합니다.
     predictions = trainer.predict(model=model, datamodule=dataloader)
