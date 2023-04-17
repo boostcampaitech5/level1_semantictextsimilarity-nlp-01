@@ -10,8 +10,8 @@ from datasets import load_dataset
 pl.seed_everything(420)
 
 class Dataloader(pl.LightningDataModule):
-    def __init__(self, model_name, batch_size, shuffle, 
-                 dataset_commit_hash, use_val_for_predict = False):
+    def __init__(self, model_name, batch_size, shuffle,
+                 dataset_commit_hash, use_val_for_predict=False):
         super().__init__()
         self.model_name = model_name
         self.batch_size = batch_size
@@ -28,6 +28,8 @@ class Dataloader(pl.LightningDataModule):
         self.target_columns = ['label']
         self.delete_columns = ['id']
         self.text_columns = ['sentence_1', 'sentence_2']
+        self.columns = ['id', 'source', 'sentence_1', 'sentence_2', 
+                        'label', 'binary-label']
 
         self.use_val_for_predict = use_val_for_predict
     
@@ -44,7 +46,7 @@ class Dataloader(pl.LightningDataModule):
         Returns:
             text (str): 전처리 끝난 텍스트 
         """
-        # <>사이의 이모티콘 제거 
+        # <>사이의 이모티콘 제거
         text = re.sub('<.*?>', '', text)
         # 한글, 숫자, 특수문자 . ? ! , ; : ^만 남기기
         text = re.sub(r'[^ㄱ-ㅎㅏ-ㅣ가-힣0-9\s.,?!:;^]', '', text)
@@ -81,7 +83,8 @@ class Dataloader(pl.LightningDataModule):
             del df_2
 
         # 기본 텍스트 전처리
-        data[self.text_columns] = data[self.text_columns].apply(lambda x: x.apply(self.preprocess_text))
+        data[self.text_columns] = data[self.text_columns].apply(
+          lambda x: x.apply(self.preprocess_text))
 
         # 안쓰는 컬럼을 삭제합니다.
         data = data.drop(columns=self.delete_columns)
@@ -101,16 +104,18 @@ class Dataloader(pl.LightningDataModule):
             # revision: tag name, or branch name, or commit hash
             train = load_dataset("Salmons/STS_Competition", 
                                 split='train', 
-                                column_names=['id', 'source', 'sentence_1', 'sentence_2', 'label', 'binary-label'], 
+                                column_names=self.columns, 
                                 revision=self.dataset_commit_hash)
             valid = load_dataset("Salmons/STS_Competition", 
                                 split='validation', 
-                                column_names=['id', 'source', 'sentence_1', 'sentence_2', 'label', 'binary-label'], 
+                                column_names=self.columns, 
                                 revision=self.dataset_commit_hash)
 
             # pandas 형식으로 변환
-            train_data = train.to_pandas().iloc[1:].reset_index(drop=True).astype({'label':'float', 'binary-label':'float'})
-            val_data = valid.to_pandas().iloc[1:].reset_index(drop=True).astype({'label':'float', 'binary-label':'float'})
+            train_data = train.to_pandas().iloc[1:].reset_index(drop=True)\
+                              .astype({'label':'float', 'binary-label':'float'})
+            val_data = valid.to_pandas().iloc[1:].reset_index(drop=True)\
+                            .astype({'label':'float', 'binary-label':'float'})
 
             # 학습데이터 준비
             train_inputs, train_targets = self.preprocessing(train_data)
@@ -118,27 +123,30 @@ class Dataloader(pl.LightningDataModule):
             # 검증데이터 준비
             val_inputs, val_targets = self.preprocessing(val_data)
 
-            # train 데이터만 shuffle을 적용해줍니다, 필요하다면 val, test 데이터에도 shuffle을 적용할 수 있습니다
+            # train 데이터만 shuffle을 적용해줍니다. 
+            # 필요하다면 val, test 데이터에도 shuffle을 적용할 수 있습니다
             self.train_dataset = Dataset(train_inputs, train_targets)
             self.val_dataset = Dataset(val_inputs, val_targets)
         
         else:
             test = load_dataset("Salmons/STS_Competition", 
                                 split='validation', 
-                                column_names=['id', 'source', 'sentence_1', 'sentence_2', 'label', 'binary-label'], 
+                                column_names=self.columns, 
                                 revision=self.dataset_commit_hash)
             predict = load_dataset("Salmons/STS_Competition", 
                                 split='test', 
-                                column_names=['id', 'source', 'sentence_1', 'sentence_2', 'label', 'binary-label'], 
+                                column_names=self.columns, 
                                 revision=self.dataset_commit_hash)
 
-            test_data = test.to_pandas().iloc[1:].reset_index(drop=True).astype({'label':'float', 'binary-label':'float'})
+            test_data = test.to_pandas().iloc[1:].reset_index(drop=True)\
+                            .astype({'label':'float', 'binary-label':'float'})
             
             # val_dataset으로 predict 해서 결과물 보려고 구분하는 지점
             if self.use_val_for_predict:
                 predict_data = test_data.copy()
             else:
-                predict_data = predict.to_pandas().iloc[1:].reset_index(drop=True)[['id', 'source', 'sentence_1', 'sentence_2']]
+                predict_data = predict.to_pandas().iloc[1:]\
+                                      .reset_index(drop=True)[self.columns[:4]]
 
             test_inputs, test_targets = self.preprocessing(test_data)
             predict_inputs, predict_targets = self.preprocessing(predict_data)
