@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 import torch
 import pytorch_lightning as pl
 from args import parse_arguments
@@ -7,6 +8,11 @@ pl.seed_everything(420)
 
 if __name__ == '__main__':
     args = parse_arguments()
+    
+    # 예측 결과 모아두는 폴더 outputs 생성
+    output_dir = "outputs"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     # dataloader와 model을 정의합니다.
     dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.dataset_commit_hash)
