@@ -4,7 +4,7 @@ from torchmetrics.functional import pearson_corrcoef
 from transformers import AutoModelForSequenceClassification
 import wandb
 from wandb import AlertLevel
-from LR_scheduler import CosineAnnealingWarmUpRestarts
+from LR_scheduler import CosineAnnealingWarmupRestarts
 pl.seed_everything(420)
 
 class Model(pl.LightningModule):
@@ -64,16 +64,19 @@ class Model(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=50, T_mult=2, eta_min=0)
-        #scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=150, T_mult=1, eta_max=1e-4,  T_up=10, gamma=0.5) 
+        # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
+        # scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
+        #                                           cycle_mult=1.0, max_lr=1e-5, min_lr=1e-6, 
+        #                                           warmup_steps=50, gamma=0.5) 
         return [optimizer]
-        #     {
-        #     "optimizer": optimizer,
-        #     "lr_scheduler": {
-        #         "scheduler": scheduler,
-        #         "interval": "step"  # 스텝별로 스케줄러를 업데이트하도록 설정
-        #     }
-        # }
+    # {
+    #         "optimizer": optimizer,
+    #         "lr_scheduler": {
+    #             "scheduler": scheduler,
+    #             "interval": "step"  # 스텝별로 스케줄러를 업데이트하도록 설정
+    #         }
+    #     }
+
     def on_train_epoch_start(self):
         # 에폭 시작 시 학습률을 로깅합니다.
         lr = self.trainer.optimizers[0].param_groups[0]["lr"]
