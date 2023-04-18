@@ -63,6 +63,7 @@ if __name__ == '__main__':
     else:
         src, model = args.model_name.split('/')
         run_name = f'{args.model_name}-{args.batch_size}-{args.max_epoch}-{args.learning_rate}'
+        
         results = []
         for k in range(args.num_folds):
             model = torch.load(f'{args.kfold_model_path}{args.model_name}-'\

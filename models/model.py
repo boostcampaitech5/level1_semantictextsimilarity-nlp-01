@@ -1,6 +1,6 @@
 import torch
 import pytorch_lightning as pl
-from torchmetrics.functional import pearson_corrcoef
+from torchmetrics import PearsonCorrCoef, F1Score
 from transformers import AutoModelForSequenceClassification
 import wandb
 from wandb import AlertLevel
@@ -8,12 +8,13 @@ from LR_scheduler import CosineAnnealingWarmupRestarts
 pl.seed_everything(420)
 
 class Model(pl.LightningModule):
-    def __init__(self, model_name, lr, loss_function='L1Loss'):
+    def __init__(self, model_name, lr, loss_function='L1Loss', bce=False):
         super().__init__()
         self.save_hyperparameters()
 
         self.model_name = model_name
         self.lr = lr
+        self.bce = bce
         self.loss_function = loss_function
 
         # 사용할 모델을 호출합니다.
@@ -21,8 +22,13 @@ class Model(pl.LightningModule):
             pretrained_model_name_or_path=model_name, 
             num_labels=1,
         )
-        # Loss 계산을 위해 사용될 L1Loss를 호출합니다.
+        
+        # loss와 evaluation metric을 정의합니다.
         self.loss_func = getattr(torch.nn, self.loss_function)()
+        if self.bce:
+            self.evaluation = F1Score(task='binary')
+        else:
+            self.evaluation = PearsonCorrCoef()
 
         # val logit 값 출력 
         self.validation_predictions = []
@@ -35,28 +41,31 @@ class Model(pl.LightningModule):
         x, y = batch
         logits = self(x)
         loss = self.loss_func(logits, y.float())
-        self.log("train_loss", loss)
+        self.log('train_loss', loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         logits = self(x)
         loss = self.loss_func(logits, y.float())
-        self.log("val_loss", loss)
-        self.log("val_pearson", pearson_corrcoef(logits.squeeze(), y.squeeze()))
+        pearson = self.evaluation(logits, y) if logits.shape[1] > 1 else \
+                  self.evaluation(logits[:, 0], y[:, 0])
+        self.log('val_loss', loss)
+        self.log('val_pearson', pearson)
         return loss
 
     def test_step(self, batch, batch_idx):
         x, y = batch
         logits = self(x)
-        pearson = pearson_corrcoef(logits.squeeze(), y.squeeze())
-        self.log("test_pearson", pearson)
+        pearson = self.evaluation(logits, y) if logits.shape[1] > 1 else \
+                  self.evaluation(logits[:, 0], y[:, 0])
+        self.log('test_pearson', pearson)
 
         wandb.alert(
-		    title="test_step",
-		    level=AlertLevel.INFO,
-		    text=f'test_pearson : {pearson}'
-		)
+		        title='test_step',
+		        level=AlertLevel.INFO,
+		        text=f'test_pearson : {pearson}',
+		    )
 
     def predict_step(self, batch, batch_idx):
         x = batch
