@@ -48,8 +48,7 @@ class Model(pl.LightningModule):
         x, y = batch
         logits = self(x)
         loss = self.loss_func(logits, y.float())
-        pearson = self.evaluation(logits, y) if logits.shape[1] > 1 else \
-                  self.evaluation(logits[:, 0], y[:, 0])
+        pearson = self.evaluation(logits.squeeze(), y.squeeze())
         self.log('val_loss', loss)
         self.log('val_pearson', pearson)
         return loss
@@ -57,8 +56,7 @@ class Model(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x, y = batch
         logits = self(x)
-        pearson = self.evaluation(logits, y) if logits.shape[1] > 1 else \
-                  self.evaluation(logits[:, 0], y[:, 0])
+        pearson = self.evaluation(logits.squeeze(), y.squeeze())
         self.log('test_pearson', pearson)
 
         wandb.alert(
