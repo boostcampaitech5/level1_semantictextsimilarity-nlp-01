@@ -18,10 +18,10 @@ class Model(pl.LightningModule):
         # 사용할 모델을 호출합니다.
         self.plm = AutoModelForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path=model_name, 
-            num_labels=1,
+            num_labels=31,
         )
         # Loss 계산을 위해 사용될 L1Loss를 호출합니다.
-        self.loss_func = torch.nn.L1Loss()
+        self.loss_func = torch.nn.CrossEntropyLoss()
 
         # val logit 값 출력 
         self.validation_predictions = []
@@ -33,7 +33,12 @@ class Model(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         logits = self(x)
+        print(logits.shape)
         loss = self.loss_func(logits, y.float())
+        y = y.sequeeze(dim=-1)
+        print('---------------------------------------------------------------------------------------')
+        print(y.dim)
+        print('---------------------------------------------------------------------------------------')
         self.log("train_loss", loss)
         return loss
 
