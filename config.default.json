@@ -1,28 +1,33 @@
 {
-    "model_name" : "klue/roberta-small",
-    "batch_size" : 32,
-    "max_epoch" : 1,
-    "shuffle" : true,
-    "learning_rate" : 1e-5,
-    "saved_model_path" : "./saved/models/model.pt",
-    "project_name" : "test",
-    "entity" : "salmons",
-    "dataset_commit_hash" : "03e01eae5e5596e23afdf86ff3006e170881ca60",
-    "sweep_config" : {
-        "method" : "bayes",
-        "metric" : {
+    "model_name": "snunlp/KR-ELECTRA-discriminator",
+    "batch_size": 32,
+    "max_epoch": 1,
+    "shuffle": true,
+    "learning_rate": 1e-5,
+    "saved_model_path": "./saved/models/model.pt",
+    "kfold_model_path": "./saved/models/",
+    "project_name": "test",
+    "entity": "salmons",
+    "dataset_commit_hash": "03e01eae5e5596e23afdf86ff3006e170881ca60",
+    "sweep_config": {
+        "method": "bayes",
+        "metric": {
             "name": "val_pearson",
             "goal": "maximize"
         },
-        "parameters" : {
-            "lr" : {
-                "distribution" : "uniform",
-                "min" : 1e-6,
-                "max" : 1e-4
+        "parameters": {
+            "lr": {
+                "distribution": "uniform",
+                "min": 1e-6,
+                "max": 1e-4
             },
-            "epochs" : {
-                "values" : [5,6,7,8,9,10]
+            "epochs": {
+                "values": [5,6,7,8,9,10]
             }
         }
-    }
+    },
+    "sweep_count": 3,
+    "bce": false,
+    "kfold": false,
+    "num_folds": 5
 }

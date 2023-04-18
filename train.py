@@ -1,17 +1,24 @@
+
 import torch
-import pandas as pd
 import pytorch_lightning as pl
-from models.model import Model
+
 from args import parse_arguments
-from dataloader.dataloader import Dataloader
+from models.model import Model
+from dataloader.dataset import *
+from dataloader.dataloader import *
+from dataloader.kfdataloader import *
+
 import wandb
-from pytorch_lightning.loggers import WandbLogger
 from wandb import AlertLevel # logging level 지정시 사용
-pl.seed_everything(420)
+from pytorch_lightning.loggers import WandbLogger
+
 
 if __name__ == '__main__':
     args = parse_arguments()
 
+    model = Model(args.model_name, args.learning_rate)
+    accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
+    
     # wnadb에서 사용될 실행 이름을 설정합니다.
     run_name = f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}'
 
@@ -24,28 +31,52 @@ if __name__ == '__main__':
     
     # 설정된 args를 실험의 hyperarams에 저장합니다.
     wandb_logger.log_hyperparams(args)
-
-    # dataloader와 model을 정의합니다.
-    dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.dataset_commit_hash)
-    model = Model(args.model_name, args.learning_rate)
-
-    # gpu가 없으면 'gpus=0'을, gpu가 여러개면 'gpus=4'처럼 사용하실 gpu의 개수를 입력해주세요
-    accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
-    trainer = pl.Trainer(accelerator=accelerator, 
-                         devices=1, 
-                         max_epochs=args.max_epoch, 
-                         log_every_n_steps=1,
-                         logger=wandb_logger,
-                         precision=16)
-
+    
     # slack에 실험 시작 메시지를 보냅니다.
     wandb.alert(title="start",
                 level=AlertLevel.INFO,
                 text=f'{run_name}')
+    
+    if not args.kfold:
+        # dataloader와 model을 정의합니다.
+        dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, 
+                                args.train_path, args.dev_path, args.test_path, 
+                                args.predict_path)
 
-    # Train part
-    trainer.fit(model=model, datamodule=dataloader)
-    trainer.test(model=model, datamodule=dataloader)
+        # gpu가 없으면 'gpus=0'을, gpu가 여러개면 'gpus=4'처럼 사용하실 gpu의 개수를 입력해주세요
+        trainer = pl.Trainer(accelerator=accelerator, 
+                             devices=1, 
+                             max_epochs=args.max_epoch, 
+                             log_every_n_steps=1)
 
-    # 학습이 완료된 모델을 저장합니다.
-    torch.save(model, args.saved_model_path)
+        # Train part
+        trainer.fit(model=model, datamodule=dataloader)
+        trainer.test(model=model, datamodule=dataloader)
+
+        # 학습이 완료된 모델을 저장합니다.
+        torch.save(model, args.saved_model_path)
+        
+    else:
+        # num_folds는 fold의 개수, k는 k번째 fold datamodule
+        result = 0
+        for k in range(args.num_folds):
+            kfdataloader = KfoldDataloader(model_name=args.model_name, 
+                                           batch_size=args.batch_size, 
+                                           shuffle=args.shuffle, 
+                                           dataset_commit_hash=args.dataset_commit_hash,
+                                           k=k,
+                                           bce=args.bce, 
+                                           num_folds=args.num_folds)
+
+            trainer = pl.Trainer(accelerator=accelerator, 
+                                 devices=1, 
+                                 max_epochs=args.max_epoch, 
+                                 log_every_n_steps=1)
+            trainer.fit(model=model, datamodule=kfdataloader)
+            score = trainer.test(model=model, datamodule=kfdataloader)
+            result += (score / args.num_folds)
+        
+            torch.save(model, 
+                       f'{args.kfold_model_path}{args.model_name}-'\
+                       f'{args.batch_size}-{args.max_epoch}-'\
+                       f'{args.learning_rate}-{k}-fold.pt')
