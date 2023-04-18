@@ -45,6 +45,7 @@ if __name__ == '__main__':
     # valid dataset 예측값을 확인하여 사후 분석 수행을 위한 dev_output.csv 뽑아내기 
     val_predict = trainer.predict(model=model, datamodule=val_dataloader)
     val_predict = list(round(float(i), 1) for i in torch.cat(val_predict))
+    val_predict = [min(5, max(0, x)) for x in val_predict]
 
     dev_output = pd.read_csv('./data/dev.csv')
     dev_output['preds'] = val_predict
