@@ -3,6 +3,7 @@ __pycache__
 .DS_Store
 .ipynb_checkpoints
 run_exps.sh
+output.log
 
 data/
 saved/
