@@ -17,8 +17,7 @@ if __name__ == '__main__':
 
     wandb.init(entity=args.entity, # config.default.json에 default값 'salmons'로 지정되어 있음
                project=args.project_name,
-               name=run_name
-              )
+               name=run_name)
 
     # pytorch lightning 의 logging과 wandb logger를 연결합니다.
     wandb_logger = WandbLogger()
@@ -40,11 +39,9 @@ if __name__ == '__main__':
                          precision=16)
 
     # slack에 실험 시작 메시지를 보냅니다.
-    wandb.alert(
-        title="start",
-        level=AlertLevel.INFO,
-        text=f'{run_name}'
-    )
+    wandb.alert(title="start",
+                level=AlertLevel.INFO,
+                text=f'{run_name}')
 
     # Train part
     trainer.fit(model=model, datamodule=dataloader)
