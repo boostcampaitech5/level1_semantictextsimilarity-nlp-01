@@ -77,7 +77,10 @@ if __name__ == '__main__':
             trainer = pl.Trainer(accelerator=accelerator, 
                                  devices=1, 
                                  max_epochs=args.max_epoch, 
-                                 log_every_n_steps=1)
+                                 log_every_n_steps=1,
+                                 logger=wandb_logger,
+                                 precision=16)
+            
             trainer.fit(model=model, datamodule=kfdataloader)
             score = trainer.test(model=model, datamodule=kfdataloader)
             results.extend(score)
