@@ -16,7 +16,7 @@ from pytorch_lightning.loggers import WandbLogger
 if __name__ == '__main__':
     args = parse_arguments()
 
-    model = Model(args.model_name, args.learning_rate)
+    model = Model(args.model_name, args.learning_rate, args.loss_function)
     accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
     
     # wnadb에서 사용될 실행 이름을 설정합니다.
@@ -58,7 +58,7 @@ if __name__ == '__main__':
         
     else:
         # num_folds는 fold의 개수, k는 k번째 fold datamodule
-        result = 0
+        results = []
         for k in range(args.num_folds):
             kfdataloader = KfoldDataloader(model_name=args.model_name, 
                                            batch_size=args.batch_size, 
@@ -74,9 +74,19 @@ if __name__ == '__main__':
                                  log_every_n_steps=1)
             trainer.fit(model=model, datamodule=kfdataloader)
             score = trainer.test(model=model, datamodule=kfdataloader)
-            result += (score / args.num_folds)
+            results.extend(score)
         
             torch.save(model, 
                        f'{args.kfold_model_path}{args.model_name}-'\
                        f'{args.batch_size}-{args.max_epoch}-'\
                        f'{args.learning_rate}-{k}-fold.pt')
+            
+        # 모델의 평균 성능
+        if args.bce:
+            result = [x['test_f1'] for x in results]
+            score = sum(result) / args.num_folds
+            print("K fold Test f1 score: ", score)
+        else:
+            result = [x['test_pearson'] for x in results]
+            score = sum(result) / args.num_folds
+            print("K fold Test pearson: ", score)

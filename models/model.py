@@ -8,12 +8,13 @@ from LR_scheduler import CosineAnnealingWarmupRestarts
 pl.seed_everything(420)
 
 class Model(pl.LightningModule):
-    def __init__(self, model_name, lr):
+    def __init__(self, model_name, lr, loss_function='L1Loss'):
         super().__init__()
         self.save_hyperparameters()
 
         self.model_name = model_name
         self.lr = lr
+        self.loss_function = loss_function
 
         # 사용할 모델을 호출합니다.
         self.plm = AutoModelForSequenceClassification.from_pretrained(
@@ -21,7 +22,7 @@ class Model(pl.LightningModule):
             num_labels=1,
         )
         # Loss 계산을 위해 사용될 L1Loss를 호출합니다.
-        self.loss_func = torch.nn.L1Loss()
+        self.loss_func = getattr(torch.nn, self.loss_function)()
 
         # val logit 값 출력 
         self.validation_predictions = []

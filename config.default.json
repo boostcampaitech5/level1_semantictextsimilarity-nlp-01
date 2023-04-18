@@ -29,5 +29,6 @@
     "sweep_count": 3,
     "bce": false,
     "kfold": false,
-    "num_folds": 5
+    "num_folds": 5,
+    "loss_functions": "L1Loss"
 }
