@@ -88,7 +88,7 @@ if __name__ == '__main__':
             torch.save(model, 
                        f'{args.kfold_model_path}{args.model_name}-'\
                        f'{args.batch_size}-{args.max_epoch}-'\
-                       f'{args.learning_rate}-{k}-fold.pt')
+                       f'{args.learning_rate}-{k}-of-{args.num_folds}-fold.pt')
             
         # 모델의 평균 성능
         if args.bce:
