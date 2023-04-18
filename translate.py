@@ -21,21 +21,6 @@ def translate(translator, text_org, src_lang='ko', dest_lang='en'):
     except NameError: pass
     return text_tgt
 
-def back_translate(translator, text_org, src_lang='ko', dest_lang='en'):
-    text_tgt = ''
-    try: 
-        text_tgt = translator.translate(text_org, src=src_lang, dest=dest_lang).text
-    except AttributeError: pass
-    except TypeError: pass
-    except JSONDecodeError: pass
-    text_back = ''
-    try:
-        text_back = translator.translate(text_tgt, src=dest_lang, dest=src_lang).text
-    except AttributeError: pass
-    except TypeError: pass
-    except JSONDecodeError: pass
-    return text_back
-
 def translate_column(column, device):
     translated = []
     for idx, s in enumerate(tqdm(column)):
@@ -46,7 +31,7 @@ def translate_column(column, device):
 
 device = google_trans()
 
-# 작업 나열
+
 dev_data['sentence_1_eng'] = translate_column(dev_data['sentence_1'], device)
 dev_data['sentence_2_eng'] = translate_column(dev_data['sentence_2'], device)
 dev_data.to_csv('/opt/ml/data/dev_translated.csv')
