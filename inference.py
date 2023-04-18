@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 import torch
 import pytorch_lightning as pl
 from args import parse_arguments
@@ -7,6 +8,11 @@ pl.seed_everything(420)
 
 if __name__ == '__main__':
     args = parse_arguments()
+    
+    # 예측 결과 모아두는 폴더 outputs 생성
+    output_dir = "outputs"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     # dataloader와 model을 정의합니다.
     dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.dataset_commit_hash)
@@ -22,8 +28,7 @@ if __name__ == '__main__':
                          log_every_n_steps=1)
 
     # Inference part
-    run_name = f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}'
-    run_name = args.model_name.replace('/', '_')
+    run_name = f'snunlp_{args.batch_size}_{args.max_epoch}_{args.learning_rate}'
 
     # 저장된 모델로 예측을 진행합니다.
     predictions = trainer.predict(model=model, datamodule=dataloader)

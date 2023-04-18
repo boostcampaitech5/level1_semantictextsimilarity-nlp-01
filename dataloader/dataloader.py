@@ -10,7 +10,7 @@ from datasets import load_dataset
 pl.seed_everything(420)
 
 class Dataloader(pl.LightningDataModule):
-    def __init__(self, model_name, batch_size, shuffle, 
+    def __init__(self, model_name, batch_size, shuffle,
                  dataset_commit_hash, use_val_for_predict=False):
         super().__init__()
         self.model_name = model_name
@@ -69,14 +69,24 @@ class Dataloader(pl.LightningDataModule):
             outputs = self.tokenizer(text, add_special_tokens=True, 
                                      padding='max_length', truncation=True)
             data.append(outputs['input_ids'])
+
         return data
 
-    def preprocessing(self, data):
+    def preprocessing(self, data, is_train = False):
+        # reverse augmentation
+        if is_train == True:
+            df_2 = data.copy()
+            df_2['sentence_1'] = data['sentence_2']
+            df_2['sentence_2'] = data['sentence_1']
+            data = pd.concat([data, df_2], ignore_index=True)
+            data = data.sample(frac=1, random_state=420).reset_index(drop=True)
+            del df_2
+
         # 기본 텍스트 전처리
         data[self.text_columns] = data[self.text_columns].apply(
           lambda x: x.apply(self.preprocess_text))
 
-        # 안쓰는 컬럼을 삭제합니다.s
+        # 안쓰는 컬럼을 삭제합니다.
         data = data.drop(columns=self.delete_columns)
 
         # 타겟 데이터가 없으면 빈 배열을 리턴합니다.
