@@ -30,5 +30,5 @@
     "bce": false,
     "kfold": false,
     "num_folds": 5,
-    "loss_functions": "L1Loss"
+    "loss_function": "L1Loss"
 }
