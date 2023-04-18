@@ -39,15 +39,18 @@ if __name__ == '__main__':
     
     if not args.kfold:
         # dataloader와 model을 정의합니다.
-        dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, 
-                                args.train_path, args.dev_path, args.test_path, 
-                                args.predict_path)
+        dataloader = Dataloader(model_name=args.model_name, 
+                                batch_size=args.batch_size, 
+                                shuffle=args.shuffle, 
+                                dataset_commit_hash=args.dataset_commit_hash)
 
         # gpu가 없으면 'gpus=0'을, gpu가 여러개면 'gpus=4'처럼 사용하실 gpu의 개수를 입력해주세요
         trainer = pl.Trainer(accelerator=accelerator, 
                              devices=1, 
                              max_epochs=args.max_epoch, 
-                             log_every_n_steps=1)
+                             log_every_n_steps=1,
+                             logger=wandb_logger,
+                             precision=16)
 
         # Train part
         trainer.fit(model=model, datamodule=dataloader)
