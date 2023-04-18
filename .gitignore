@@ -18,3 +18,4 @@ dev_output.csv
 EDA.ipynb
 eda*.ipynb
 outputs/
+.env/
