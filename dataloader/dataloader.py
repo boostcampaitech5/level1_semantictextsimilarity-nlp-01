@@ -49,8 +49,10 @@ class Dataloader(pl.LightningDataModule):
         """
         # <>사이의 이모티콘 제거
         text = re.sub('<.*?>', '', text)
-        # 한글, 숫자, 특수문자 . ? ! , ; : ^만 남기기
+        # 한글, 영어, 숫자, 특수문자 ? ; : ^만 남기기
         text = re.sub(r'[^ㄱ-ㅎㅏ-ㅣ가-힣0-9\s.,?!:;^]', '', text)
+        # ㅎ, ㅋ, ㅠ 제거
+        text = re.sub('[ㅋㅎㅠ]+', '', text)
         # 특수문자 중복제거 
         text = re.sub(r'([.?!,:]){2,}', r'\1', text)
         # 양 공백 제거 
