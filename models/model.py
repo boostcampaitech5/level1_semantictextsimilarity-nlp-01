@@ -8,7 +8,7 @@ from LR_scheduler import CosineAnnealingWarmupRestarts
 pl.seed_everything(420)
 
 class Model(pl.LightningModule):
-    def __init__(self, model_name, lr, loss_function='L1Loss', bce=False):
+    def __init__(self, model_name, lr, loss_function='L1Loss', bce=False, optim='AdamW', beta=1.0):
         super().__init__()
         self.save_hyperparameters()
 
@@ -16,6 +16,8 @@ class Model(pl.LightningModule):
         self.lr = lr
         self.bce = bce
         self.loss_function = loss_function
+        self.optim = optim
+        self.beta = beta
 
         # 사용할 모델을 호출합니다.
         self.plm = AutoModelForSequenceClassification.from_pretrained(
@@ -24,7 +26,11 @@ class Model(pl.LightningModule):
         )
         
         # loss와 evaluation metric을 정의합니다.
-        self.loss_func = getattr(torch.nn, self.loss_function)()
+        if self.loss_function=="SmoothL1Loss":
+            self.loss_func = getattr(torch.nn, self.loss_function)(beta=self.beta)
+        else:
+            self.loss_func = getattr(torch.nn, self.loss_function)
+        
         if self.bce:
             self.evaluation = F1Score(task='binary')
         else:
@@ -71,7 +77,10 @@ class Model(pl.LightningModule):
         return logits.squeeze()
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+        if self.optim=="AdamW":
+            optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+        else:
+            optimizer = torch.optim.RAdam(self.parameters(), lr=self.lr)
         # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
         # scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
         #                                           cycle_mult=1.0, max_lr=1e-5, min_lr=1e-6, 

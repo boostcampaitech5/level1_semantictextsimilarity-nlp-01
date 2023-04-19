@@ -13,14 +13,15 @@ if __name__ == '__main__':
 
     # Sweep 통해 실행될 학습 코드 생성 
     def sweep_train(config=None):
-        wandb.init(config = config, entity=args.entity, project=args.project_name)
+
+        wandb.init(config=config, entity=args.entity, project=args.project_name)
         config = wandb.config
 
         # dataloader와 model을 정의합니다.
         dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.dataset_commit_hash)
-        model = Model(args.model_name, config.lr)
+        model = Model(args.model_name, config.lr, config.loss_function, config.optimizer, config.beta)
 
-        wandb_logger = WandbLogger(project=args.project_name)
+        wandb_logger = WandbLogger()
 
         # gpu가 없으면 'gpus=0'을, gpu가 여러개면 'gpus=4'처럼 사용하실 gpu의 개수를 입력해주세요
         accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
@@ -38,7 +39,8 @@ if __name__ == '__main__':
     # Sweep 생성
     sweep_id = wandb.sweep(
         sweep=args.sweep_config,
-        project = args.project_name
+        project=args.project_name,
+        entity=args.entity
     )
     wandb.agent(
         sweep_id=sweep_id,

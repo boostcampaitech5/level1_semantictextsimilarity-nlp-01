@@ -18,7 +18,7 @@ if __name__ == '__main__':
     accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
     
     # wnadb에서 사용될 실행 이름을 설정합니다.
-    run_name = f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}'
+    run_name = f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}-{args.loss_function}'
     
     wandb.init(entity=args.entity, # config.default.json에 default값 'salmons'로 지정되어 있음
                project=args.project_name,
