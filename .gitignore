@@ -20,3 +20,4 @@ EDA.ipynb
 eda*.ipynb
 outputs/
 .env/
+sweep_config.json
