@@ -29,7 +29,7 @@ class Model(pl.LightningModule):
         if self.loss_function=="SmoothL1Loss":
             self.loss_func = getattr(torch.nn, self.loss_function)(beta=self.beta)
         else:
-            self.loss_func = getattr(torch.nn, self.loss_function)
+            self.loss_func = getattr(torch.nn, self.loss_function)()
         
         if self.bce:
             self.evaluation = F1Score(task='binary')
