@@ -21,3 +21,4 @@ eda*.ipynb
 outputs/
 .env/
 sweep_config.json
+nohup.out
