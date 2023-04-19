@@ -9,6 +9,7 @@ from tqdm.auto import tqdm
 from datasets import load_dataset
 pl.seed_everything(420)
 
+
 class Dataloader(pl.LightningDataModule):
     def __init__(self, model_name, batch_size, shuffle,
                  dataset_commit_hash, use_val_for_predict=False):
@@ -127,7 +128,6 @@ class Dataloader(pl.LightningDataModule):
             # 필요하다면 val, test 데이터에도 shuffle을 적용할 수 있습니다
             self.train_dataset = Dataset(train_inputs, train_targets)
             self.val_dataset = Dataset(val_inputs, val_targets)
-        
         else:
             test = load_dataset("Salmons/STS_Competition", 
                                 split='validation', 

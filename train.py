@@ -1,12 +1,10 @@
-
 import torch
 import pytorch_lightning as pl
 
 from args import parse_arguments
 from models.model import Model
-from dataloader.dataset import *
-from dataloader.dataloader import *
-from dataloader.kfdataloader import *
+from dataloader.dataloader import Dataloader
+from dataloader.kfdataloader import KfoldDataloader
 
 import wandb
 from wandb import AlertLevel # logging level 지정시 사용
@@ -21,7 +19,7 @@ if __name__ == '__main__':
     
     # wnadb에서 사용될 실행 이름을 설정합니다.
     run_name = f'{args.model_name}#{args.batch_size}-{args.max_epoch}-{args.learning_rate}'
-
+    
     wandb.init(entity=args.entity, # config.default.json에 default값 'salmons'로 지정되어 있음
                project=args.project_name,
                name=run_name)
@@ -32,22 +30,25 @@ if __name__ == '__main__':
     # 설정된 args를 실험의 hyperarams에 저장합니다.
     wandb_logger.log_hyperparams(args)
     
-    # slack에 실험 시작 메시지를 보냅니다.
-    wandb.alert(title="start",
-                level=AlertLevel.INFO,
-                text=f'{run_name}')
-    
     if not args.kfold:
+        # slack에 실험 시작 메시지를 보냅니다.
+        wandb.alert(title="start",
+                    level=AlertLevel.INFO,
+                    text=f'{run_name}')
+      
         # dataloader와 model을 정의합니다.
-        dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, 
-                                args.train_path, args.dev_path, args.test_path, 
-                                args.predict_path)
+        dataloader = Dataloader(model_name=args.model_name, 
+                                batch_size=args.batch_size, 
+                                shuffle=args.shuffle, 
+                                dataset_commit_hash=args.dataset_commit_hash)
 
         # gpu가 없으면 'gpus=0'을, gpu가 여러개면 'gpus=4'처럼 사용하실 gpu의 개수를 입력해주세요
         trainer = pl.Trainer(accelerator=accelerator, 
                              devices=1, 
                              max_epochs=args.max_epoch, 
-                             log_every_n_steps=1)
+                             log_every_n_steps=1,
+                             logger=wandb_logger,
+                             precision=16)
 
         # Train part
         trainer.fit(model=model, datamodule=dataloader)
@@ -60,6 +61,11 @@ if __name__ == '__main__':
         # num_folds는 fold의 개수, k는 k번째 fold datamodule
         results = []
         for k in range(args.num_folds):
+            # slack에 실험 시작 메시지를 보냅니다.
+            wandb.alert(title="start",
+                        level=AlertLevel.INFO,
+                        text=f'{run_name}')
+          
             kfdataloader = KfoldDataloader(model_name=args.model_name, 
                                            batch_size=args.batch_size, 
                                            shuffle=args.shuffle, 
@@ -71,7 +77,10 @@ if __name__ == '__main__':
             trainer = pl.Trainer(accelerator=accelerator, 
                                  devices=1, 
                                  max_epochs=args.max_epoch, 
-                                 log_every_n_steps=1)
+                                 log_every_n_steps=1,
+                                 logger=wandb_logger,
+                                 precision=16)
+            
             trainer.fit(model=model, datamodule=kfdataloader)
             score = trainer.test(model=model, datamodule=kfdataloader)
             results.extend(score)
@@ -79,7 +88,7 @@ if __name__ == '__main__':
             torch.save(model, 
                        f'{args.kfold_model_path}{args.model_name}-'\
                        f'{args.batch_size}-{args.max_epoch}-'\
-                       f'{args.learning_rate}-{k}-fold.pt')
+                       f'{args.learning_rate}-{k}-of-{args.num_folds}-fold.pt')
             
         # 모델의 평균 성능
         if args.bce:
@@ -90,3 +99,5 @@ if __name__ == '__main__':
             result = [x['test_pearson'] for x in results]
             score = sum(result) / args.num_folds
             print("K fold Test pearson: ", score)
+            
+    wandb.finish()
