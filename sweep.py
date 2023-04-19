@@ -6,11 +6,18 @@ from args import parse_arguments
 from dataloader.dataloader import Dataloader
 import wandb
 from pytorch_lightning.loggers import WandbLogger
+
+from argparse import Namespace
+import json
+
 pl.seed_everything(420)
 
 if __name__ == '__main__':
     args = parse_arguments()
 
+    with open('./sweep_config.json', 'r') as f:
+        sweep_config = json.load(f)
+        
     # Sweep 통해 실행될 학습 코드 생성 
     def sweep_train(config=None):
 
@@ -18,8 +25,8 @@ if __name__ == '__main__':
         config = wandb.config
 
         # dataloader와 model을 정의합니다.
-        dataloader = Dataloader(args.model_name, args.batch_size, args.shuffle, args.dataset_commit_hash)
-        model = Model(args.model_name, config.lr, config.loss_function, config.optimizer, config.beta)
+        dataloader = Dataloader(args.model_name, config.batch_size, args.shuffle, args.dataset_commit_hash)
+        model = Model(args.model_name, config.lr, config.loss_function, args.bce,config.optimizer, config.beta)
 
         wandb_logger = WandbLogger()
 
@@ -38,7 +45,7 @@ if __name__ == '__main__':
     
     # Sweep 생성
     sweep_id = wandb.sweep(
-        sweep=args.sweep_config,
+        sweep=sweep_config,
         project=args.project_name,
         entity=args.entity
     )
@@ -47,3 +54,4 @@ if __name__ == '__main__':
         function=sweep_train,
         count=args.sweep_count
     )
+    
