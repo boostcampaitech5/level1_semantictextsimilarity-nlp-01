@@ -62,12 +62,13 @@ if __name__ == '__main__':
         dev_output.to_csv(f'./outputs/dev_output_{run_name}.csv', index=False, encoding='cp949')
     else:
         src, model = args.model_name.split('/')
-        run_name = f'{args.model_name}-{args.batch_size}-{args.max_epoch}-{args.learning_rate}'
+        run_name = f'{args.model_name}-bs{args.batch_size}-ep{args.max_epoch}-lr{args.learning_rate}-{args.num_folds}folds'
+        
         results = []
         for k in range(args.num_folds):
             model = torch.load(f'{args.kfold_model_path}{args.model_name}-'\
                                f'{args.batch_size}-{args.max_epoch}-'\
-                               f'{args.learning_rate}-{k}-fold.pt')
+                               f'{args.learning_rate}-{k}-of-{args.num_folds}-fold.pt')
             # Inference part
             # 저장된 모델로 예측을 진행합니다.
             predictions = trainer.predict(model=model, datamodule=dataloader)
