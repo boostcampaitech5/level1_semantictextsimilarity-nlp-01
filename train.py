@@ -14,7 +14,6 @@ from pytorch_lightning.loggers import WandbLogger
 if __name__ == '__main__':
     args = parse_arguments()
 
-    model = Model(args.model_name, args.learning_rate, args.loss_function)
     accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
     
     # wnadb에서 사용될 실행 이름을 설정합니다.
@@ -37,6 +36,7 @@ if __name__ == '__main__':
                     text=f'{run_name}')
       
         # dataloader와 model을 정의합니다.
+        model = Model(args.model_name, args.learning_rate, args.loss_function)
         dataloader = Dataloader(model_name=args.model_name, 
                                 batch_size=args.batch_size, 
                                 shuffle=args.shuffle, 
@@ -65,7 +65,8 @@ if __name__ == '__main__':
             wandb.alert(title="start",
                         level=AlertLevel.INFO,
                         text=f'{run_name}')
-          
+
+            model = Model(args.model_name, args.learning_rate, args.loss_function)
             kfdataloader = KfoldDataloader(model_name=args.model_name, 
                                            batch_size=args.batch_size, 
                                            shuffle=args.shuffle, 
