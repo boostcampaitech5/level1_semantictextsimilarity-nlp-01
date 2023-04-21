@@ -8,7 +8,7 @@
     "kfold_model_path": "./saved/models/",
     "project_name": "test",
     "entity": "salmons",
-    "dataset_commit_hash": "03e01eae5e5596e23afdf86ff3006e170881ca60",
+    "dataset_commit_hash": "huggingface_dataset_source",
     "sweep_config": {
         "method": "bayes",
         "metric": {

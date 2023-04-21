@@ -1,6 +1,6 @@
 import torch
 import pytorch_lightning as pl
-
+import os
 from args import parse_arguments
 from models.model import Model
 from dataloader.dataloader import Dataloader
@@ -28,6 +28,11 @@ if __name__ == '__main__':
     
     # 설정된 args를 실험의 hyperarams에 저장합니다.
     wandb_logger.log_hyperparams(args)
+
+    # 모델 저장 위치 생성
+    output_dir = "saved/models"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     
     if not args.kfold:
         # slack에 실험 시작 메시지를 보냅니다.
