@@ -24,7 +24,11 @@ class Model(pl.LightningModule):
         )
         
         # loss와 evaluation metric을 정의합니다.
-        self.loss_func = getattr(torch.nn, self.loss_function)()
+        # self.loss_func = getattr(torch.nn, self.loss_function)()
+        if self.loss_function == 'SmoothL1Loss':
+            self.loss_func = getattr(torch.nn, self.loss_function)(beta=0.1)
+        else: # L1Loss, MSELoss, etc.
+            self.loss_func = getattr(torch.nn, self.loss_function)
         if self.bce:
             self.evaluation = F1Score(task='binary')
         else:
