@@ -5,6 +5,10 @@
 ## 일정 (Schedule)
 프로젝트 전체 기간 (10일+) : 4월 10일 (월) 10:00 ~ 4월 20일 (목) 19:00
 
+## 프로젝트 구조 (Project Structure)
+<img src="https://user-images.githubusercontent.com/37128004/233752744-9becc593-3457-4d00-bb6c-79a0423edcdc.png" width="700" height="500"/>
+
+
 ## 데이터 (Data)
 - 총 데이터 개수 : 10,974 문장 쌍
 - Train 데이터 개수: 9,324
