@@ -15,7 +15,7 @@ test_gt/
 jieun_test
 jihwan_test/
 wandb/
-config.json
+config*.json
 dev_output.csv
 EDA.ipynb
 eda*.ipynb
