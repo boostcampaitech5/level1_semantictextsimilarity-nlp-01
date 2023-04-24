@@ -1,0 +1,83 @@
+{
+  "name": "exp-name",
+  "n_gpu": 1,
+  "arch": {
+      "type": "snunlp/KR-ELECTRA-discriminator",
+      "args": {
+
+      }
+  },
+  "dataloader": {
+      "type": "STSDataModule",
+      "args": {
+          "hf_datasets_hash": "00e11acc1364f0f222777f8d828e0a8cf0de265c",
+          "batch_size": 16,
+          "shuffle": true,
+          "num_workers": 0,
+          "k_fold": {
+              "enabled": true,
+              "k": 5
+          }
+      }
+  },
+  "optimizer": {
+      "type": "AdamW",
+      "args": {
+          "lr": 1e-5,
+          "weight_decay": 0,
+          "amsgrad": true
+      }
+  },
+  "loss": {
+      "type": "SmoothL1Loss",
+      "args": {
+          "beta": 0.5
+      }
+  },
+  "metrics": ["val_pearson"],
+  "lr_scheduler": {
+      "type": "StepLR",
+      "args": {
+          "step_size": 50,          
+          "gamma": 0.1
+      }
+  },
+  "trainer": {
+      "epochs": 6,
+      "save_dir": "saved/models/",
+      "save_freq": 1,
+      "monitor": "max val_pearson",
+      "early_stop": 3
+  },
+  "wandb": {
+      "project_name": "sts",
+      "sweep_count": 10,
+      "sweep_config": {
+          "method": "bayes",
+          "metric": {
+              "name": "val_pearson",
+              "goal": "maximize"
+          },
+          "parameters": {
+              "lr": {
+                  "values": [3e-6, 5e-6, 7e-6, 1e-5, 2e-5, 3e-5, 5e-5]
+              },
+              "epochs": {
+                  "values": [4, 5, 6, 7]
+              },
+              "batch_size" : {
+                  "values" : [16]
+              },
+              "loss_function" :{
+                  "values" : ["SmoothL1Loss"]
+              },
+              "beta":{
+                  "values" : [0.1, 0.5, 1.0, 2.0, 5.0]
+              },
+              "optimizer":{
+                  "values" : ["AdamW"]
+              }
+          }
+      }
+  }
+}
