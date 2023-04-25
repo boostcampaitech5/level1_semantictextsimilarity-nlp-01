@@ -7,10 +7,9 @@ import wandb
 from torchmetrics import PearsonCorrCoef, F1Score
 from wandb import AlertLevel
 from LR_scheduler import CosineAnnealingWarmupRestarts
-pl.seed_everything(420)
 
 class GRUModel(pl.LightningModule):
-    def __init__(self, model_name, lr, loss_function='L1Loss', bce=False, optim='AdamW', beta=1.0):
+    def __init__(self, model_name, lr, loss_function='L1Loss', bce=False):
         super().__init__()
         self.save_hyperparameters()
 
@@ -18,8 +17,6 @@ class GRUModel(pl.LightningModule):
         self.lr = lr
         self.bce = bce
         self.loss_function = loss_function
-        self.optim = optim
-        self.beta = beta
 
         # Load the pre-trained model configuration
         config = AutoConfig.from_pretrained(model_name)
@@ -45,10 +42,11 @@ class GRUModel(pl.LightningModule):
 
         # Loss 계산을 위해 사용될 L1Loss를 호출합니다.
         if self.loss_function=="SmoothL1Loss":
-            self.loss_func = getattr(torch.nn, self.loss_function)(beta=self.beta)
+            self.loss_func = getattr(torch.nn, self.loss_function)(beta=0.1)
         else:
             self.loss_func = getattr(torch.nn, self.loss_function)()
         
+        # 평가 지표(evaluation metric) 정의
         if self.bce:
             self.evaluation = F1Score(task='binary')
         else:
@@ -106,7 +104,15 @@ class GRUModel(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
-        return [optimizer]
+        # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
+        scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
+                                                  cycle_mult=1.0, max_lr=1e-5, min_lr=1e-6, 
+                                                  warmup_steps=50, gamma=0.5) 
+        return {'optimizer': optimizer,
+                'lr_scheduler': {
+                    'scheduler': scheduler,
+                    'interval': 'step'
+                }}
 
     def on_train_epoch_start(self):
         # 에폭 시작 시 학습률을 로깅합니다.
