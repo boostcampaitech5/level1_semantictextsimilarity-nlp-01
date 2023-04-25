@@ -3,7 +3,7 @@ import torch
 import pytorch_lightning as pl
 
 from args import parse_arguments
-from gru_model import GRUModel
+from models.gru_model import GRUModel
 from dataloader.dataloader import STSDataModule
 
 import wandb
