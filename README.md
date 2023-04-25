@@ -56,8 +56,15 @@ level1_semantictextsimilarity-nlp-01/
 ```
 
 ## 사용법 (Usage)
-- 학습: `python train.py`
-- 추론: `python inference.py`
+- 학습
+
+  `python train.py`
+- 추론
+
+  `python inference.py`
+- 역번역 (실행 파일의 권한을 부여할 수 있는 로컬 환경에서)
+
+  `python utils/translate.py`
 
 ### 설정 파일 형식 (Config file format)
 ```
