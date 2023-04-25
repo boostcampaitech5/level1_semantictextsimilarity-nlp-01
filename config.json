@@ -13,9 +13,9 @@
             "batch_size": 16,
             "shuffle": true,
             "dataset_commit_hash": "00e11acc1364f0f222777f8d828e0a8cf0de265c",
-            "num_workers": 0,
+            "num_workers": 6,
             "k_fold": {
-                "enabled": true,
+                "enabled": false,
                 "k": 5
             }
         }
