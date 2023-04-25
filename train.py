@@ -13,11 +13,9 @@ from pytorch_lightning.loggers import WandbLogger
 pl.seed_everything(420)
 
 
-def main(config):
-    accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
-    
+def main(config):    
     # WandB에서 사용될 실행 이름을 설정    
-    run_name = '{}-{}-{}-{}-{}'.format(
+    run_name = '{}_{}_{}_{}_{}'.format(
         config.arch['type'],
         config.dataloader['args']['batch_size'],
         config.trainer['epochs'],
@@ -37,8 +35,10 @@ def main(config):
 
     # 모델 저장 위치 생성
     output_dir = config.trainer['save_dir']
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    os.makedirs(os.path.dirname(output_dir), exist_ok=True)
+    
+    # 가속기 설정
+    accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
     
     if not config.dataloader['args']['k_fold']['enabled']:
         # Slack에 실험 시작 메시지를 보냄
@@ -74,7 +74,9 @@ def main(config):
         trainer.test(model=model, datamodule=dataloader)
 
         # 학습이 완료된 모델을 저장
-        torch.save(model, config.trainer['saved_dir'] + 'model.pt')
+        save_dir = '{}{}.pt'.format(config.trainer['save_dir'], run_name)
+        os.makedirs(os.path.dirname(save_dir), exist_ok=True)
+        torch.save(model, save_dir)
         
     else: # k-fold 교차 검증
         results = []
@@ -109,12 +111,18 @@ def main(config):
                                  logger=wandb_logger,
                                  precision=16)
             
-            
+            # 학습
             trainer.fit(model=model, datamodule=dataloader)
+            # 추론
             score = trainer.test(model=model, datamodule=dataloader)
+            # 각 fold별 추론 결과 수집
             results.extend(score)
-        
-            torch.save(model, config.trainer['saved_dir'])
+
+            # 학습이 완료된 모델을 저장
+            save_dir = '{}{}_{}-fold.pt'.format(config.trainer['save_dir'],
+                                                run_name, k)
+            os.makedirs(os.path.dirname(save_dir), exist_ok=True)
+            torch.save(model, save_dir)
             
         # 모델의 평균 성능
         if config.loss['args']['bce']:
