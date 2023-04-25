@@ -184,7 +184,7 @@ class STSDataModule(pl.LightningDataModule):
                                            'binary-label': 'float'})
                 val_data = valid.to_pandas().iloc[1:].reset_index(drop=True)\
                                 .astype({'label': 'float',
-                                        'binary-label': 'float'})
+                                         'binary-label': 'float'})
 
                 # 학습데이터 준비
                 train_inputs, train_targets = self.preprocessing(train_data)
