@@ -53,6 +53,7 @@
     "wandb": {
         "entity": "salmons",
         "project_name": "sts",
+        "sweep_project_name" : "jihwan_sweep",
         "sweep_count": 10
     },
     "sweep_config": {
