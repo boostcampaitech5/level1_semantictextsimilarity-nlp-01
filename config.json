@@ -13,7 +13,7 @@
             "batch_size": 16,
             "shuffle": true,
             "dataset_commit_hash": "00e11acc1364f0f222777f8d828e0a8cf0de265c",
-            "num_workers": 6,
+            "num_workers": -1,
             "k_fold": {
                 "enabled": false,
                 "k": 5
@@ -44,7 +44,7 @@
         }
     },
     "trainer": {
-        "epochs": 6,
+        "epochs": 1,
         "save_dir": "saved/models/",
         "save_freq": 1,
         "monitor": "max val_pearson",
