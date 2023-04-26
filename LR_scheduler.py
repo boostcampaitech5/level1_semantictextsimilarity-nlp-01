@@ -15,14 +15,14 @@ class CosineAnnealingWarmupRestarts(_LRScheduler):
     """
     
     def __init__(self,
-                 optimizer : torch.optim.Optimizer,
-                 first_cycle_steps : int,
-                 cycle_mult : float = 1.,
-                 max_lr : float = 1e-4,
-                 min_lr : float = 1e-6,
-                 warmup_steps : int = 50,
-                 gamma : float = 0.5,
-                 last_epoch : int = -1
+                 optimizer: torch.optim.Optimizer,
+                 first_cycle_steps: int,
+                 cycle_mult: float = 1.,
+                 max_lr: float = 1e-4,
+                 min_lr: float = 1e-6,
+                 warmup_steps: int = 50,
+                 gamma: float = 0.5,
+                 last_epoch: int = -1
         ):
         assert warmup_steps < first_cycle_steps
         

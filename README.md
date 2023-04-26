@@ -56,54 +56,101 @@ level1_semantictextsimilarity-nlp-01/
 ```
 
 ## 사용법 (Usage)
-- 학습: `python train.py`
-- 추론: `python inference.py`
+- 학습
+
+  `python train.py`
+- 추론
+
+  `python inference.py`
+- 역번역 (실행 파일의 권한을 부여할 수 있는 로컬 환경에서)
+
+  `python utils/translate.py`
 
 ### 설정 파일 형식 (Config file format)
 ```
 {
-    "model_name": "snunlp/KR-ELECTRA-discriminator",
-    "batch_size": 16,
-    "max_epoch": 6,
-    "shuffle": true,
-    "learning_rate": 1e-5,
-    "saved_model_path": "./saved/models/model.pt",
-    "kfold_model_path": "./saved/models/",
-    "project_name": "test",
-    "entity": "salmons",
-    "dataset_commit_hash": "",
-    "sweep_config": {
-      "method": "bayes",
-      "metric": {
-          "name": "val_pearson",
-          "goal": "maximize"
-      },
-      "parameters": {
-          "lr": {
-              "values" : [3e-6, 5e-6, 7e-6, 1e-5, 2e-5, 3e-5, 5e-5]
-          },
-          "epochs": {
-              "values": [4, 5, 6, 7]
-          },
-          "batch_size" : {
-              "values" : [16]
-          },
-          "loss_function" :{
-              "values" : ["SmoothL1Loss"]
-          },
-          "beta":{
-              "values" : [0.1, 0.5, 1.0, 2.0, 5.0]
-          },
-          "optimizer":{
-              "values" : ["AdamW"]
-          }
-      }
+    "name": "exp-name",
+    "n_gpu": 1,
+    "arch": {
+        "type": "snunlp/KR-ELECTRA-discriminator",
+        "args": {
+
+        }
     },
-    "sweep_count": 10,
-    "bce": false,
-    "kfold": false,
-    "num_folds": 5,
-    "loss_function": "SmoothL1Loss",
-    "optimizers": "AdamW"
-  }
+    "dataloader": {
+        "type": "STSDataModule",
+        "args": {
+            "batch_size": 16,
+            "shuffle": true,
+            "dataset_commit_hash": "00e11acc1364f0f222777f8d828e0a8cf0de265c",
+            "num_workers": -1,
+            "k_fold": {
+                "enabled": false,
+                "k": 5
+            }
+        }
+    },
+    "optimizer": {
+        "type": "AdamW",
+        "args": {
+            "lr": 1e-5,
+            "weight_decay": 0,
+            "amsgrad": true
+        }
+    },
+    "loss": {
+        "type": "SmoothL1Loss",
+        "args": {
+            "bce": false,
+            "beta": 0.5
+        }
+    },
+    "metrics": ["val_pearson"],
+    "lr_scheduler": {
+        "type": "StepLR",
+        "args": {
+            "step_size": 50,          
+            "gamma": 0.1
+        }
+    },
+    "trainer": {
+        "epochs": 1,
+        "save_dir": "saved/models/",
+        "save_freq": 1,
+        "monitor": "max val_pearson",
+        "early_stop": 3
+    },
+    "wandb": {
+        "entity": "salmons",
+        "project_name": "sts",
+        "sweep_count": 10
+    },
+    "sweep_config": {
+        "method": "bayes",
+        "metric": {
+            "name": "val_pearson",
+            "goal": "maximize"
+        },
+        "parameters": {
+            "lr": {
+                "values": [3e-6, 5e-6, 7e-6, 1e-5, 2e-5, 3e-5, 5e-5]
+            },
+            "epochs": {
+                "values": [4, 5, 6, 7]
+            },
+            "batch_size" : {
+                "values" : [16]
+            },
+            "loss_function" :{
+                "values" : ["SmoothL1Loss"]
+            },
+            "beta":{
+                "values" : [0.1, 0.5, 1.0, 2.0, 5.0]
+            },
+            "optimizer":{
+                "values" : ["AdamW"]
+            }
+        }
+    }
+}
 ```

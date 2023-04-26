@@ -1,0 +1,7 @@
+flake8_rules_explanation.txt
+
+E203_whitespace_before_colon:
+    이 오류는 콜론(:) 앞에 공백이 있을 때 발생하는데, 구글 스타일 가이드에 따라 이 오류를 무시합니다.
+
+W503_line_break_before_binary_operator:
+    이 경고는 이항 연산자 앞에 줄 바꿈이 있을 때 발생하는데, 구글 스타일 가이드에 따라 이 경고를 무시합니다.
