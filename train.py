@@ -3,7 +3,6 @@ import torch
 import pytorch_lightning as pl
 
 from args import parse_arguments
-from models.model import Model
 from dataloader.dataloader import STSDataModule
 
 import wandb
@@ -40,6 +39,13 @@ def main(config):
     # 가속기 설정
     accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
     
+    # 베이스라인 모델 혹은 GRU가 부가된 모델을 설정할 것인지 결정
+    model_class = "gru_model.GRUModel" if config.arch['args']['gru_enabled']\
+                  else "model.Model"
+    module_name, class_name = model_class.split('.')
+    model_module = __import__('models.' + module_name, fromlist=[class_name])
+    ModelClass = getattr(model_module, class_name)
+    
     if not config.dataloader['args']['k_fold']['enabled']:
         # Slack에 실험 시작 메시지를 보냄
         wandb.alert(title="start",
@@ -47,9 +53,9 @@ def main(config):
                     text=f'{run_name}')
       
         # Model 정의
-        model = Model(config.arch['type'],
-                      config.optimizer['args']['lr'],
-                      config.loss['type'])
+        model = ModelClass(config.arch['type'],
+                           config.optimizer['args']['lr'],
+                           config.loss['type'])
         
         # Dataloader 정의
         dataloader = STSDataModule(
@@ -88,9 +94,9 @@ def main(config):
                         text=f'{run_name}')
 
             # Model 정의
-            model = Model(config.arch['type'],
-                          config.optimizer['args']['lr'],
-                          config.loss['type'])
+            model = ModelClass(config.arch['type'],
+                               config.optimizer['args']['lr'],
+                               config.loss['type'])
             
             # Dataloader 정의
             dataloader = STSDataModule(
