@@ -1,5 +1,6 @@
 import torch
 
+
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, inputs, targets=[]):
         self.inputs = inputs
@@ -12,7 +13,8 @@ class Dataset(torch.utils.data.Dataset):
         if len(self.targets) == 0:
             return torch.tensor(self.inputs[idx])
         else:
-            return torch.tensor(self.inputs[idx]), torch.tensor(self.targets[idx])
+            return torch.tensor(self.inputs[idx]), \
+                torch.tensor(self.targets[idx])
 
     def __len__(self):
         """데이터셋 샘플 개수 반환."""
