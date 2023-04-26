@@ -27,31 +27,32 @@
 ```
 level1_semantictextsimilarity-nlp-01/
 │
-├── train.py - 학습 시작을 위한 메인 스크립트
-├── inference.py - 학습 모델의 평가 및 추론을 위한 스크립트
+├── train.py                // 학습 시작을 위한 메인 스크립트
+├── inference.py            // 학습 모델의 평가 및 추론을 위한 스크립트
 │
-├── config.json - 학습 설정 관리를 위한 JSON
-├── args.py - 학습을 위한 메인 스크립트와 학습 설정 연결
+├── config.json             // 학습 설정 관리를 위한 JSON
+├── args.py                 // 학습을 위한 메인 스크립트와 학습 설정 연결
 │
-├── lr_scheduler.py - 학습률 스케줄러
-├── sweep.py - 하이퍼파라미터 서치를 위한 스크립트
+├── lr_scheduler.py         // 학습률 스케줄러
+├── sweep.py                // 하이퍼파라미터 서치를 위한 스크립트
 │
-├── dataloader/ - 데이터 불러오기에 관한 모든 것
+├── dataloader/             // 데이터 불러오기에 관한 모든 것
 │   ├── dataset.py
 │   └── dataloader.py
 │
-├── data/ - 입력 데이터 저장을 위한 기본 저장소
+├── data/                   // 입력 데이터 저장을 위한 기본 저장소
 │
-├── lightning_logs/ - PyTorch lightning 자동 생성 로깅 출력
+├── lightning_logs/         // PyTorch lightning 자동 생성 로깅 출력
 │
-├── models/ - 모델, 손실 함수, 최적화 알고리즘, 평가 지표
-│   └── model.py
+├── models/                 // 모델, 손실 함수, 최적화 알고리즘, 평가 지표
+│   ├── gru_model.py
+│   └── model.py            // 베이스라인 모델
 │
 ├── saved/
-│   └── models/ - 학습 모델의 저장소
+│   └── models/             // 학습 모델의 저장소
 │  
-└── utils/ - 유틸리티 함수
-    ├── util.py
+└── utils/                  // 유틸리티 함수
+    ├── back_translate.py   // 역번역을 위한 모듈
     └── ...
 ```
 

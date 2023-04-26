@@ -4,7 +4,7 @@
     "arch": {
         "type": "snunlp/KR-ELECTRA-discriminator",
         "args": {
-
+            "gru_enabled": true
         }
     },
     "dataloader": {
