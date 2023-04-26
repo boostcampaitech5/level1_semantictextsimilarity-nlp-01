@@ -68,7 +68,7 @@ level1_semantictextsimilarity-nlp-01/
   `python inference.py`
 - 하이퍼파라미터 튜닝
 
-  ``
+  `python sweep.py`
 - 역번역 (실행 파일의 권한을 부여할 수 있는 로컬 환경에서)
 
   `python utils/translate.py`
