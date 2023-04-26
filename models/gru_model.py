@@ -30,14 +30,22 @@ class GRUModel(pl.LightningModule):
         loss_func (torch.nn.Module): 최적화에 사용되는 손실 함수
         validation_predictions (list): 훈련 중 검증 예측을 저장하기 위한 목록
     """
-    def __init__(self, model_name: str, lr: float, loss_function: str ='L1Loss', bce: bool = False):
+    def __init__(self,
+                 model_name: str,
+                 optimizer: str = 'AdamW',
+                 lr: float = 1e-5,
+                 loss_function: str ='L1Loss',
+                 beta: float = 0.2,
+                 bce: bool = False):
         super().__init__()
         self.save_hyperparameters()
 
         self.model_name = model_name
+        self.optimizer = optimizer
         self.lr = lr
-        self.bce = bce
         self.loss_function = loss_function
+        self.beta = beta
+        self.bce = bce
 
         # Load the pre-trained model configuration
         config = AutoConfig.from_pretrained(model_name)
@@ -52,8 +60,8 @@ class GRUModel(pl.LightningModule):
         # Add a bidirectional GRU layer
         self.gru = GRU(input_size=2*self.plm.config.hidden_size, 
                        hidden_size=self.plm.config.hidden_size,
-                       num_layers = 3,
-                       dropout = 0.1,
+                       num_layers=3,
+                       dropout=0.1,
                        batch_first=True, 
                        bidirectional=True)
         self.linear = Linear(in_features=2*self.plm.config.hidden_size, out_features=1)
@@ -63,7 +71,7 @@ class GRUModel(pl.LightningModule):
 
         # Loss 계산을 위해 사용될 L1Loss를 호출합니다.
         if self.loss_function=="SmoothL1Loss":
-            self.loss_func = getattr(torch.nn, self.loss_function)(beta=0.1)
+            self.loss_func = getattr(torch.nn, self.loss_function)(beta=self.beta)
         else:
             self.loss_func = getattr(torch.nn, self.loss_function)()
         
@@ -176,7 +184,8 @@ class GRUModel(pl.LightningModule):
         Returns:
             dict: opmizer와 lr_scheduler를 포함하는 dictionary 반환
         """
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+        
+        optimizer = getattr(torch.optim, self.optimizer)(self.parameters(), lr=self.lr)
         # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
         scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
                                                   cycle_mult=1.0, max_lr=1e-5, min_lr=1e-6, 
