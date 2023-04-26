@@ -1,5 +1,5 @@
 import torch
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Any
 from torch import Tensor
 import pytorch_lightning as pl
 from torchmetrics.functional import pearson_corrcoef
@@ -21,7 +21,7 @@ class GRUModel(pl.LightningModule):
         loss_function (str, optional): 사용할 손실 함수. 기본값은 'L1Loss'
         bce (bool, optional): 평가에 이진 교차 엔트로피(Binary Cross Entropy, BCE)를 사용할지 여부. 기본값은 False
         is_schedule (bool): learning rate scheduler 사용 여부
-        
+
     Attributes:
         plm (AutoModelForSequenceClassification): 시퀀스 분류를 위한 사전 학습 모델
         gru (GRU): Bi-directional GRU layer
@@ -32,17 +32,24 @@ class GRUModel(pl.LightningModule):
         loss_func (torch.nn.Module): 최적화에 사용되는 손실 함수
         validation_predictions (list): 훈련 중 검증 예측을 저장하기 위한 목록
     """
-    def __init__(self, model_name: str, lr: float, beta: float,
-                 loss_function: str ='L1Loss', bce: bool = False, is_schedule:bool = False):
+    def __init__(self,
+                 model_name: str,
+                 optimizer: str = 'AdamW',
+                 lr: float = 1e-5,
+                 loss_function: str = 'L1Loss',
+                 beta: float = 0.2,
+                 bce: bool = False,
+                 is_schedule:bool = False):
         super().__init__()
         self.save_hyperparameters()
 
         self.model_name = model_name
+        self.optimizer = optimizer
         self.lr = lr
-        self.bce = bce
         self.loss_function = loss_function
-        self.is_schedule = is_schedule
         self.beta = beta
+        self.bce = bce
+        self.is_schedule = is_schedule
 
         # Load the pre-trained model configuration
         config = AutoConfig.from_pretrained(model_name)
@@ -57,8 +64,8 @@ class GRUModel(pl.LightningModule):
         # Add a bidirectional GRU layer
         self.gru = GRU(input_size=2*self.plm.config.hidden_size, 
                        hidden_size=self.plm.config.hidden_size,
-                       num_layers = 3,
-                       dropout = 0.1,
+                       num_layers=3,
+                       dropout=0.1,
                        batch_first=True, 
                        bidirectional=True)
         self.linear = Linear(in_features=2*self.plm.config.hidden_size, out_features=1)
@@ -174,10 +181,10 @@ class GRUModel(pl.LightningModule):
         logits = self(x)
         return logits.squeeze()
 
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> Any:
         """학습에 사용한 optimizer과 learning-rate scheduler 선택."""
 
-        optimizer = getattr(torch.optim, "AdamW")(self.parameters(), lr=self.lr)
+        optimizer = getattr(torch.optim, self.optimizer)(self.parameters(), lr=self.lr)
         if self.is_schedule:
             # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
             scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
@@ -193,6 +200,23 @@ class GRUModel(pl.LightningModule):
             configure = [optimizer]
         
         return configure
+    def configure_optimizers(self) -> dict:
+        """
+        optimizer와 learning rate scheduler를 설정
+
+        Returns:
+            dict: opmizer와 lr_scheduler를 포함하는 dictionary 반환
+        """
+        optimizer = getattr(torch.optim, self.optimizer)(self.parameters(), lr=self.lr)
+        # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
+        scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
+                                                  cycle_mult=1.0, max_lr=1e-5, min_lr=1e-6, 
+                                                  warmup_steps=50, gamma=0.5) 
+        return {'optimizer': optimizer,
+                'lr_scheduler': {
+                    'scheduler': scheduler,
+                    'interval': 'step'
+                }}
 
     def on_train_epoch_start(self) -> None:
         """

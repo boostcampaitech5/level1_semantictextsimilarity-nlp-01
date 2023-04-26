@@ -9,17 +9,24 @@ from LR_scheduler import CosineAnnealingWarmupRestarts
 
 
 class Model(pl.LightningModule):
-    def __init__(self, model_name: str, lr: float, beta: float,
-                loss_function:str = 'L1Loss', bce:bool = False, is_schedule:bool = False):
+    def __init__(self,
+                 model_name: str,
+                 optimizer: str = 'AdamW',
+                 lr: float = 1e-5,
+                 loss_function: str = 'L1Loss',
+                 beta: float = 0.2,
+                 bce: bool = False,
+                 is_schedule:bool = False):
         super().__init__()
         self.save_hyperparameters()
 
         self.model_name = model_name
+        self.optimizer = optimizer
         self.lr = lr
         self.loss_function = loss_function
+        self.beta = beta
         self.bce = bce
         self.is_schedule = is_schedule
-        self.beta = beta
 
         # 모델 호출
         self.plm = AutoModelForSequenceClassification.from_pretrained(
@@ -119,7 +126,7 @@ class Model(pl.LightningModule):
     def configure_optimizers(self):
         """학습에 사용한 optimizer과 learning-rate scheduler 선택."""
 
-        optimizer = getattr(torch.optim, "AdamW")(self.parameters(), lr=self.lr)
+        optimizer = getattr(torch.optim, self.optimizer)(self.parameters(), lr=self.lr)
         if self.is_schedule:
             # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
             scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 

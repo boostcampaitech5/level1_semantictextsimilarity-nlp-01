@@ -54,9 +54,10 @@ def main(config):
       
         # Model 정의
         model = ModelClass(config.arch['type'],
+                           config.optimizer['type'],
                            config.optimizer['args']['lr'],
-                           config.loss['args']['beta'],
                            config.loss['type'],
+                           config.loss['args']['beta'],
                            config.loss['args']['bce'],
                            config.lr_scheduler['is_schedule'])
         
@@ -98,11 +99,12 @@ def main(config):
 
             # Model 정의
             model = ModelClass(config.arch['type'],
-                           config.optimizer['args']['lr'],
-                           config.loss['args']['beta'],
-                           config.loss['type'],
-                           config.loss['args']['bce'],
-                           config.lr_scheduler['is_schedule'])
+                               config.optimizer['type'],
+                               config.optimizer['args']['lr'],
+                               config.loss['type'],
+                               config.loss['args']['beta'],
+                               config.loss['args']['bce'],
+                               config.lr_scheduler['is_schedule'])
             
             # Dataloader 정의
             dataloader = STSDataModule(
