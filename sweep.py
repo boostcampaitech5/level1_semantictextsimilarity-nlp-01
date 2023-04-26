@@ -23,6 +23,13 @@ def main(config: Any) -> None:
                    project=config.wandb['sweep_project_name'])
         sweep_config = wandb.config
 
+        # 베이스라인 모델 혹은 GRU가 부가된 모델을 설정할 것인지 결정
+        model_class = "gru_model.GRUModel" if config.arch['args']['gru_enabled']\
+                    else "model.Model"
+        module_name, class_name = model_class.split('.')
+        model_module = __import__('models.' + module_name, fromlist=[class_name])
+        ModelClass = getattr(model_module, class_name)
+
         # dataloader와 model을 정의합니다.
         dataloader = STSDataModule(
             model_name=config.arch['type'],
@@ -31,10 +38,11 @@ def main(config: Any) -> None:
             dataset_commit_hash=config.dataloader['args']['dataset_commit_hash'],
             num_workers=config.dataloader['args']['num_workers'],
         )
-        model = Model(config.arch['type'],
+        model = ModelClass(config.arch['type'],
                       sweep_config.lr,
-                      sweep_config.loss_function)
-
+                      sweep_config.loss_function,
+                      config.lr_scheduler['is_schedule'])
+        
         wandb_logger = WandbLogger()
 
         # 가속기 설정

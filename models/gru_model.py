@@ -30,7 +30,7 @@ class GRUModel(pl.LightningModule):
         loss_func (torch.nn.Module): 최적화에 사용되는 손실 함수
         validation_predictions (list): 훈련 중 검증 예측을 저장하기 위한 목록
     """
-    def __init__(self, model_name: str, lr: float, loss_function: str ='L1Loss', bce: bool = False):
+    def __init__(self, model_name: str, lr: float, loss_function: str ='L1Loss', bce: bool = False, is_schedule:bool = False):
         super().__init__()
         self.save_hyperparameters()
 
@@ -38,6 +38,7 @@ class GRUModel(pl.LightningModule):
         self.lr = lr
         self.bce = bce
         self.loss_function = loss_function
+        self.is_schedule = is_schedule
 
         # Load the pre-trained model configuration
         config = AutoConfig.from_pretrained(model_name)
@@ -169,23 +170,25 @@ class GRUModel(pl.LightningModule):
         logits = self(x)
         return logits.squeeze()
 
-    def configure_optimizers(self) -> dict:
-        """
-        optimizer와 learning rate scheduler를 설정
+    def configure_optimizers(self):
+        """학습에 사용한 optimizer과 learning-rate scheduler 선택."""
 
-        Returns:
-            dict: opmizer와 lr_scheduler를 포함하는 dictionary 반환
-        """
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
-        # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
-        scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
-                                                  cycle_mult=1.0, max_lr=1e-5, min_lr=1e-6, 
-                                                  warmup_steps=50, gamma=0.5) 
-        return {'optimizer': optimizer,
-                'lr_scheduler': {
-                    'scheduler': scheduler,
-                    'interval': 'step'
-                }}
+        if self.is_schedule:
+            # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
+            scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
+                                                    cycle_mult=1.0, max_lr=1e-5, min_lr=1e-6, 
+                                                    warmup_steps=50, gamma=0.5)
+            configure =  {'optimizer': optimizer,
+                          'lr_scheduler': {
+                            'scheduler': scheduler,
+                            'interval': 'step'
+                            }
+                        }
+        else:
+            configure = [optimizer]
+        
+        return configure
 
     def on_train_epoch_start(self) -> None:
         """

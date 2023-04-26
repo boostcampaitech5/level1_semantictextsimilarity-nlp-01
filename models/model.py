@@ -10,7 +10,7 @@ from LR_scheduler import CosineAnnealingWarmupRestarts
 
 class Model(pl.LightningModule):
     def __init__(self, model_name: str, lr: float, 
-                loss_function:str = 'L1Loss', bce:bool = False):
+                loss_function:str = 'L1Loss', bce:bool = False, is_schedule:bool = False):
         super().__init__()
         self.save_hyperparameters()
 
@@ -18,6 +18,7 @@ class Model(pl.LightningModule):
         self.lr = lr
         self.loss_function = loss_function
         self.bce = bce
+        self.is_schedule = is_schedule
 
         # 모델 호출
         self.plm = AutoModelForSequenceClassification.from_pretrained(
@@ -118,15 +119,21 @@ class Model(pl.LightningModule):
         """학습에 사용한 optimizer과 learning-rate scheduler 선택."""
 
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
-        # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
-        scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
-                                                  cycle_mult=1.0, max_lr=1e-5, min_lr=1e-6, 
-                                                  warmup_steps=50, gamma=0.5) 
-        return {'optimizer': optimizer,
-                'lr_scheduler': {
-                    'scheduler': scheduler,
-                    'interval': 'step'
-                }}
+        if self.is_schedule:
+            # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
+            scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
+                                                    cycle_mult=1.0, max_lr=1e-5, min_lr=1e-6, 
+                                                    warmup_steps=50, gamma=0.5)
+            configure =  {'optimizer': optimizer,
+                          'lr_scheduler': {
+                            'scheduler': scheduler,
+                            'interval': 'step'
+                            }
+                        }
+        else:
+            configure = [optimizer]
+        
+        return configure
 
     def on_train_epoch_start(self):
         """에폭 시작 시 학습률 로깅."""

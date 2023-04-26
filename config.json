@@ -41,7 +41,8 @@
         "args": {
             "step_size": 50,          
             "gamma": 0.1
-        }
+        },
+        "is_schedule": false
     },
     "trainer": {
         "epochs": 1,
