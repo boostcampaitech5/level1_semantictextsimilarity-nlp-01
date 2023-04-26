@@ -63,12 +63,18 @@ level1_semantictextsimilarity-nlp-01/
 ```
 
 ## 사용법 (Usage)
+- 환경 설치
+
+  `pip install -r requirements.txt`
 - 학습
 
   `python train.py`
 - 추론
 
   `python inference.py`
+- 하이퍼파라미터 튜닝
+
+  `python sweep.py`
 - 역번역 (실행 파일의 권한을 부여할 수 있는 로컬 환경에서)
 
   `python utils/translate.py`
