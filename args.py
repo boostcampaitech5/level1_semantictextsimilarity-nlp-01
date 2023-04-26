@@ -2,7 +2,7 @@ import argparse
 from argparse import Namespace
 import json
 
-def parse_arguments() -> argparse.Namespace:
+def parse_arguments() -> Namespace:
     """config.json 파일의 내용을 argparse.Namespace 객체로 변환.
     
     Returns:

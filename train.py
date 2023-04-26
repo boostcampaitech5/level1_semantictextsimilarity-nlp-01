@@ -53,9 +53,11 @@ def main(config):
                     text=f'{run_name}')
       
         # Model 정의
-        model = ModelClass(config.arch['type'],
-                           config.optimizer['args']['lr'],
-                           config.loss['type'])
+        model = Model(config.arch['type'],
+                      config.optimizer['args']['lr'],
+                      config.loss['args']['beta'],
+                      config.loss['type'],
+                      config.loss['args']['bce'])
         
         # Dataloader 정의
         dataloader = STSDataModule(
