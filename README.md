@@ -8,9 +8,9 @@
 ## 팀원(가나다순)
 |박경택|박지은|송인서|윤지환|
 |:---:|:---:|:---:|:---:|
-|<img src="https://avatars.githubusercontent.com/u/97149910?v=4" width="100">|<img src="https://avatars.githubusercontent.com/u/97666193?v=4" width="100">|<img src="https://avatars.githubusercontent.com/u/41552919?v=4" width="100">|<img src="https://avatars.githubusercontent.com/u/37128004?v=4" width="100">|
-|afterthougt@gmail.com|imhappyhill@gmail.com|songinseo0910@gmail.com|yjh091500@naver.com|
-|https://github.com/afterthougt|https://github.com/iamzieun|https://github.com/fortunetiger|https://github.com/ohilikeit|
+|<img src="https://avatars.githubusercontent.com/u/97149910?v=4" width="120" height="120">|<img src="https://avatars.githubusercontent.com/u/97666193?v=4" width="120" height="120">|<img src="https://avatars.githubusercontent.com/u/41552919?v=4" width="120" height="120">|<img src="https://avatars.githubusercontent.com/u/37128004?v=4" width="120" height="120">|
+|[Email](afterthougt@gmail.com)|[Email](imhappyhill@gmail.com)|[Email](songinseo0910@gmail.com)|[Email](yjh091500@naver.com)|
+|[@afterthougt](https://github.com/afterthougt)|[@iamzieun](https://github.com/iamzieun)|[@forturnetiger](https://github.com/fortunetiger)|[@ohilikeit](https://github.com/ohilikeit)|
 
 ## 프로젝트 구조 (Project Structure)
 <img src="https://user-images.githubusercontent.com/37128004/233752744-9becc593-3457-4d00-bb6c-79a0423edcdc.png" width="700" height="500"/>
