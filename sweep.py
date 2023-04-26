@@ -39,11 +39,12 @@ def main(config: Any) -> None:
             num_workers=config.dataloader['args']['num_workers'],
         )
         model = ModelClass(config.arch['type'],
-                      sweep_config.lr,
-                      config.loss['args']['beta'],
-                      sweep_config.loss_function,
-                      config.loss['args']['bce'],
-                      config.lr_scheduler['is_schedule'])
+                           sweep_config.optimizer,
+                           sweep_config.lr,
+                           sweep_config.loss_function,
+                           config.loss['args']['beta'],
+                           config.loss['args']['bce'],
+                           config.lr_scheduler['is_schedule'])
         
         wandb_logger = WandbLogger()
 
