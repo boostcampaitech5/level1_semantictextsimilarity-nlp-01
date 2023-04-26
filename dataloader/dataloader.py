@@ -74,7 +74,7 @@ class STSDataModule(pl.LightningDataModule):
         
         # <>사이의 이모티콘 제거
         text = re.sub('<.*?>', '', text)
-        # 한글, 영어, 숫자, 특수문자 ? ; : ^만 남기기
+        # 한글, 영어, 숫자, 특수문자 ? ; : ^만 남김
         text = re.sub(r'[^ㄱ-ㅎㅏ-ㅣ가-힣0-9\s.,?!:;^]', '', text)
         # ㅎ, ㅋ, ㅠ 제거
         text = re.sub('[ㅋㅎㅠ]+', '', text)
@@ -82,7 +82,7 @@ class STSDataModule(pl.LightningDataModule):
         text = re.sub(r'([.?!,:]){2,}', r'\1', text)
         # 양 공백 제거 
         text = text.strip()
-        # 반복되는 글자를 2개로 줄여준다. 
+        # 반복되는 글자들을 2개로 줄임
         text = re.sub(r"(.)\1+", r"\1\1", text)
         return text
 
@@ -105,7 +105,7 @@ class STSDataModule(pl.LightningDataModule):
         for idx, item in tqdm(dataframe.iterrows(), 
                               desc='tokenizing', 
                               total=len(dataframe)):
-            # 두 입력 문장을 [SEP] 토큰으로 이어붙여서 전처리.
+            # 두 입력 문장을 [SEP] 토큰으로 이어붙여서 전처리
             text = '[SEP]'.join([item[text] for text in self.text_columns])
             outputs = self.tokenizer(text, add_special_tokens=True, 
                                      padding='max_length', truncation=True)
@@ -128,29 +128,21 @@ class STSDataModule(pl.LightningDataModule):
                 리스트.
             targets: 정답 레이블을 포함한 리스트.
         """
-        
-        # reverse augmentation
-        if is_train == True:
-            df_2 = data.copy()
-            df_2['sentence_1'] = data['sentence_2']
-            df_2['sentence_2'] = data['sentence_1']
-            data = pd.concat([data, df_2], ignore_index=True)
-            data = data.sample(frac=1, random_state=420).reset_index(drop=True)
-            del df_2
 
         # 기본 텍스트 전처리
         data[self.text_columns] = data[self.text_columns].apply(
           lambda x: x.apply(self.preprocess_text))
 
-        # 안쓰는 컬럼을 삭제합니다.
+        # 사용하지 않는 컬럼 삭제
         data = data.drop(columns=self.delete_columns)
 
-        # 타겟 데이터가 없으면 빈 배열을 리턴합니다.
+        # 타겟 데이터가 없으면 빈 배열을 리턴
         try:
             targets = data[self.target_columns].values.tolist()
         except:
             targets = []
-        # 텍스트 데이터를 전처리합니다.
+
+        # 텍스트 데이터 전처리
         inputs = self.tokenizing(data)
         return inputs, targets
 
@@ -164,9 +156,10 @@ class STSDataModule(pl.LightningDataModule):
             stage: 실행 스테이지. 'fit'이 기본값.
         """
         
+        # train stage
         if stage == 'fit':
+            
             # 데이터셋 로드
-            # revision: tag name, or branch name, or commit hash
             train = load_dataset("Salmons/STS_Competition", 
                                  split='train', 
                                  column_names=self.columns, 
@@ -186,18 +179,17 @@ class STSDataModule(pl.LightningDataModule):
                                 .astype({'label': 'float',
                                          'binary-label': 'float'})
 
-                # 학습데이터 준비
+                # train 데이터 및 val 데이터 준비
                 train_inputs, train_targets = self.preprocessing(train_data)
-
-                # 검증데이터 준비
                 val_inputs, val_targets = self.preprocessing(val_data)
 
-                # train 데이터만 shuffle을 적용해줍니다. 
-                # 필요하다면 val, test 데이터에도 shuffle을 적용할 수 있습니다
+                # train 데이터셋만 shuffle 적용
+                # 필요에 따라 val, test 데이터셋에도 shuffle 적용 가능
                 self.train_dataset = Dataset(train_inputs, train_targets)
                 self.val_dataset = Dataset(val_inputs, val_targets)
-                
-            else: # k-fold dataloader
+            
+            # k-fold dataloader
+            else: 
                 total_data = train.to_pandas().iloc[1:].reset_index(drop=True)\
                                   .astype({'label': 'float',
                                            'binary-label': 'float'})
@@ -215,11 +207,12 @@ class STSDataModule(pl.LightningDataModule):
                 train_indexes, val_indexes = all_splits[self.k]
                 train_indexes, val_indexes = train_indexes.tolist(), val_indexes.tolist()
 
-                # fold한 index에 따라 데이터셋 분할
+                # fold한 index에 따라 train, val 데이터셋 분할
                 self.train_dataset = [total_dataset[x] for x in train_indexes] 
                 self.val_dataset = [total_dataset[x] for x in val_indexes]
-                
-        else: # test stage
+        
+        # test stage
+        else: 
             test = load_dataset("Salmons/STS_Competition", 
                                 split='validation', 
                                 column_names=self.columns, 
@@ -233,7 +226,7 @@ class STSDataModule(pl.LightningDataModule):
                             .astype({'label': 'float',
                                      'binary-label': 'float'})
             
-            # val_dataset으로 predict 해서 결과물 보려고 구분하는 지점
+            # predict할 데이터셋 선택 (val / test)
             if self.use_val_for_predict:
                 predict_data = test_data.copy()
             else:

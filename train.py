@@ -14,7 +14,7 @@ pl.seed_everything(420)
 
 
 def main(config):    
-    # WandB에서 사용될 실행 이름을 설정    
+    # 실험명 정의
     run_name = '{}_{}_{}_{}_{}'.format(
         config.arch['type'],
         config.dataloader['args']['batch_size'],
@@ -23,14 +23,14 @@ def main(config):
         config.loss['type'],
     )
     
-    wandb.init(entity=config.wandb['entity'], # 기본값: 'salmons'
+    wandb.init(entity=config.wandb['entity'],
                project=config.wandb['project_name'],
                name=run_name)
 
     # PyTorch Lightning 의 logging과 WandB logger를 연결
     wandb_logger = WandbLogger()
     
-    # 설정된 args를 실험의 hyperarams에 저장
+    # 설정된 args를 실험의 hyperparams에 저장
     wandb_logger.log_hyperparams(config)
 
     # 모델 저장 위치 생성
@@ -70,10 +70,11 @@ def main(config):
 
         # 학습
         trainer.fit(model=model, datamodule=dataloader)
-        # 추론
+
+        # 평가
         trainer.test(model=model, datamodule=dataloader)
 
-        # 학습이 완료된 모델을 저장
+        # 학습이 완료된 모델 저장
         save_dir = '{}{}.pt'.format(config.trainer['save_dir'], run_name)
         os.makedirs(os.path.dirname(save_dir), exist_ok=True)
         torch.save(model, save_dir)
@@ -113,12 +114,14 @@ def main(config):
             
             # 학습
             trainer.fit(model=model, datamodule=dataloader)
-            # 추론
+
+            # 평가
             score = trainer.test(model=model, datamodule=dataloader)
+
             # 각 fold별 추론 결과 수집
             results.extend(score)
 
-            # 학습이 완료된 모델을 저장
+            # 학습이 완료된 모델 저장
             save_dir = '{}{}_{}-fold.pt'.format(config.trainer['save_dir'],
                                                 run_name, k)
             os.makedirs(os.path.dirname(save_dir), exist_ok=True)

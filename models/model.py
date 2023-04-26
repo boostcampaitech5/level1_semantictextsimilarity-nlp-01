@@ -9,14 +9,15 @@ from LR_scheduler import CosineAnnealingWarmupRestarts
 
 
 class Model(pl.LightningModule):
-    def __init__(self, model_name, lr, loss_function='L1Loss', bce=False):
+    def __init__(self, model_name: str, lr: float, 
+                loss_function:str = 'L1Loss', bce:bool = False):
         super().__init__()
         self.save_hyperparameters()
 
         self.model_name = model_name
         self.lr = lr
-        self.bce = bce
         self.loss_function = loss_function
+        self.bce = bce
 
         # 모델 호출
         self.plm = AutoModelForSequenceClassification.from_pretrained(
@@ -40,10 +41,22 @@ class Model(pl.LightningModule):
         self.validation_predictions = []
 
     def forward(self, x):
+        """모든 호출에서 실행되는 연산."""
+        
         x = self.plm(x)['logits']
         return x
 
     def training_step(self, batch, batch_idx):
+        """training loss 계산.
+        
+        Args:
+            batch: Dataloader의 output.
+            batch_idx: batch의 인덱스.
+        
+        Returns:
+            loss: loss값.
+        """
+
         x, y = batch
         logits = self(x)
         loss = self.loss_func(logits, y.float())
@@ -51,6 +64,16 @@ class Model(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
+        """validation loss 및 피어슨 상관계수 계산.
+        
+        Args:
+            batch: Dataloader의 output.
+            batch_idx: batch의 인덱스.
+        
+        Returns:
+            loss: loss값.
+        """
+
         x, y = batch
         logits = self(x)
         loss = self.loss_func(logits, y.float())
@@ -60,6 +83,13 @@ class Model(pl.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
+        """test 피어슨 상관계수 계산.
+        
+        Args:
+            batch: Dataloader의 output.
+            batch_idx: batch의 인덱스.
+        """
+
         x, y = batch
         logits = self(x)
         pearson = self.evaluation(logits.squeeze(), y.squeeze())
@@ -70,11 +100,23 @@ class Model(pl.LightningModule):
 		            text=f'test_pearson : {pearson}')
 
     def predict_step(self, batch, batch_idx):
+        """predict 데이터셋에 대한 예측값 생성.
+        
+        Args:
+            batch: Dataloader의 output.
+            batch_idx: batch의 인덱스.
+        
+        Returns:
+            logits.squeeze(): batch에 대한 예측값.
+        """
+
         x = batch
         logits = self(x)
         return logits.squeeze()
 
     def configure_optimizers(self):
+        """학습에 사용한 optimizer과 learning-rate scheduler 선택."""
+
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
         # https://github.com/katsura-jp/pytorch-cosine-annealing-with-warmup
         scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=200, 
@@ -87,6 +129,7 @@ class Model(pl.LightningModule):
                 }}
 
     def on_train_epoch_start(self):
-        # 에폭 시작 시 학습률을 로깅합니다.
+        """에폭 시작 시 학습률 로깅."""
+
         lr = self.trainer.optimizers[0].param_groups[0]["lr"]
         self.log("lr", lr)

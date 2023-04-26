@@ -21,7 +21,7 @@ def main(config):
         config.loss['type'],
     )
     
-    # 예측 결과 모아두는 폴더 outputs 생성
+    # 예측 결과를 모아두는 폴더(outputs) 생성
     output_dir = "outputs"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -43,7 +43,7 @@ def main(config):
         use_val_for_predict=True
     )
 
-    # Acceleator 설정
+    # 가속기 설정
     accelerator = 'gpu' if torch.cuda.is_available() else 'cpu'
     
     # Trainer 정의
@@ -57,6 +57,8 @@ def main(config):
         # Model 정의
         load_dir = '{}{}.pt'.format(config.trainer['save_dir'], run_name)
         model = torch.load(load_dir)
+        
+        # Inference part
         # 저장된 모델로 예측 진행
         predictions = trainer.predict(model=model, datamodule=dataloader)
 
@@ -83,7 +85,7 @@ def main(config):
      # 0 미만 또는 5 초과의 값을 clipping
     predictions = [min(5., max(0., x)) for x in predictions]
     
-    # output 형식을 불러와서 예측된 결과로 바꿔주고, output.csv로 출력
+    # output 형식을 불러와서 예측된 결과로 바꿔준 후 csv로 내보냄
     output = pd.read_csv('./data/sample_submission.csv')
     output['target'] = predictions
 
@@ -91,7 +93,7 @@ def main(config):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     output.to_csv(output_path, index=False)
     
-    # valid dataset 예측값을 확인하여 사후 분석 수행을 위한 dev_output.csv 뽑아냄
+    # valid dataset에 대한 예측값을 확인하여 사후 분석 수행을 위한 dev_output.csv 뽑아냄
     val_predict = trainer.predict(model=model, datamodule=val_dataloader)
     val_predict = list(round(float(i), 3) for i in torch.cat(val_predict))
     val_predict = [min(5., max(0., x)) for x in val_predict]
