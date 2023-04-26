@@ -40,7 +40,9 @@ def main(config: Any) -> None:
         )
         model = ModelClass(config.arch['type'],
                       sweep_config.lr,
+                      config.loss['args']['beta'],
                       sweep_config.loss_function,
+                      config.loss['args']['bce'],
                       config.lr_scheduler['is_schedule'])
         
         wandb_logger = WandbLogger()
