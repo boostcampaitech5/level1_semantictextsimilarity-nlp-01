@@ -5,9 +5,15 @@
 ## 일정 (Schedule)
 프로젝트 전체 기간 (10일+) : 4월 10일 (월) 10:00 ~ 4월 20일 (목) 19:00
 
+## 팀원(가나다순)
+|박경택|박지은|송인서|윤지환|
+|:---:|:---:|:---:|:---:|
+|<img src="https://avatars.githubusercontent.com/u/97149910?v=4" width="100">|<img src="https://avatars.githubusercontent.com/u/97666193?v=4" width="100">|<img src="https://avatars.githubusercontent.com/u/41552919?v=4" width="100">|<img src="https://avatars.githubusercontent.com/u/37128004?v=4" width="100">|
+|afterthougt@gmail.com|imhappyhill@gmail.com|songinseo0910@gmail.com|yjh091500@naver.com|
+|https://github.com/afterthougt|https://github.com/iamzieun|https://github.com/fortunetiger|https://github.com/ohilikeit|
+
 ## 프로젝트 구조 (Project Structure)
 <img src="https://user-images.githubusercontent.com/37128004/233752744-9becc593-3457-4d00-bb6c-79a0423edcdc.png" width="700" height="500"/>
-
 
 ## 데이터 (Data)
 - 총 데이터 개수 : 10,974 문장 쌍
@@ -57,18 +63,12 @@ level1_semantictextsimilarity-nlp-01/
 ```
 
 ## 사용법 (Usage)
-- 환경 설치
-
-  `pip install -r requirements.txt`
 - 학습
 
   `python train.py`
 - 추론
 
   `python inference.py`
-- 하이퍼파라미터 튜닝
-
-  `python sweep.py`
 - 역번역 (실행 파일의 권한을 부여할 수 있는 로컬 환경에서)
 
   `python utils/translate.py`
